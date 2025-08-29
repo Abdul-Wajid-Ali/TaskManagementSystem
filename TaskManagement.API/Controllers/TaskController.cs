@@ -93,7 +93,7 @@ namespace TaskManagement.API.Controllers
         }
 
         /// <summary>
-        /// Soft deletes a task by marking it as deleted.
+        /// Soft deletes a task by updating deletedOn DateTime field.
         /// </summary>
         /// <param name="id">Task Id.</param>
         /// <returns>Status of deletion.</returns>

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TaskManagement.API.Responses;
-using TaskManagement.Application.DTOs.Tasks;
 using TaskManagement.Application.DTOs.Users;
 using TaskManagement.Application.Interfaces.Services;
 
@@ -94,7 +93,7 @@ namespace TaskManagement.API.Controllers
         }
 
         /// <summary>
-        /// Soft deletes a user by marking it as deleted.
+        /// Soft deletes a user by updating deletedOn DateTime field.
         /// </summary>
         /// <param name="id">User Id.</param>
         /// <returns>Status of deletion.</returns>
