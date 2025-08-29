@@ -1,28 +1,37 @@
 ﻿using AutoMapper;
+using TaskManagement.Application.DTOs.Auth;
 using TaskManagement.Application.DTOs.Users;
 using TaskManagement.Application.Interfaces.Repositories;
 using TaskManagement.Application.Interfaces.Services;
 using TaskManagement.Domain.Entities;
+using TaskManagement.Domain.Enums;
 
 namespace TaskManagement.Application.Services
 {
-    public class UserService : IUserService
+    public class UserService(IMapper mapper, IUserRepository repository, IPasswordService passwordService) : IUserService
     {
-        private readonly IMapper _mapper;
-        private readonly IUserRepository _repository;
-        private readonly IPasswordService _passwordService;
-
-        public UserService(IMapper mapper, IUserRepository repository, IPasswordService passwordService)
-        {
-            _mapper = mapper;
-            _repository = repository;
-            _passwordService = passwordService;
-        }
+        private readonly IMapper _mapper = mapper;
+        private readonly IUserRepository _repository = repository;
+        private readonly IPasswordService _passwordService = passwordService;
 
         public async Task<long> CreateUserAsync(CreateUserDto dto)
         {
             var newUser = _mapper.Map<User>(dto);
 
+            newUser.Role = UserRole.Employee;
+            newUser.PasswordSalt = _passwordService.GenerateSalt();
+            newUser.PasswordHash = _passwordService.HashPassword(dto.Password, newUser.PasswordSalt);
+
+            await _repository.CreateUserAsync(newUser);
+
+            return newUser.Id;
+        }
+
+        public async Task<long> RegisterUserAsync(RegisterRequestDto dto)
+        {
+            var newUser = _mapper.Map<User>(dto);
+
+            newUser.Role = UserRole.Employee;
             newUser.PasswordSalt = _passwordService.GenerateSalt();
             newUser.PasswordHash = _passwordService.HashPassword(dto.Password, newUser.PasswordSalt);
 

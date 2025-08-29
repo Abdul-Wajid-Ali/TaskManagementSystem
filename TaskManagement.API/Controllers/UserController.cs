@@ -9,19 +9,17 @@ namespace TaskManagement.API.Controllers
      /// Controller for managing users.
      /// </summary>
     [ApiController]
-    [Route("api/users")]
+    [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly IMapper _mapper;
         private readonly IUserService _userService;
 
         /// <summary>
         /// Constructor for UserController.
         /// </summary>
         /// <param name="userService">Service for user operations.</param>
-        public UserController(IMapper mapper,IUserService userService)
+        public UserController(IMapper mapper, IUserService userService)
         {
-            _mapper = mapper;
             _userService = userService;
         }
 
@@ -37,7 +35,6 @@ namespace TaskManagement.API.Controllers
         {
             if (dto == null || string.IsNullOrWhiteSpace(dto.Email))
                 return BadRequest(ApiResponse<Object>.FailResponse("Invalid User Data!"));
-
 
             var userId = await _userService.CreateUserAsync(dto);
             return Ok(ApiResponse<long>.SuccessResponse(userId, "User Created Successfully."));
@@ -87,8 +84,6 @@ namespace TaskManagement.API.Controllers
         {
             if (dto == null)
                 return BadRequest(ApiResponse<object>.FailResponse("Invalid User data"));
-
-            var userDto = _mapper.Map<UpdateUserDto>(dto);
 
             var updated = await _userService.UpdateUserAsync(id, dto);
 

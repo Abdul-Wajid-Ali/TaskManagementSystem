@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Options;
-
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using TaskManagement.Application.Config;
 using TaskManagement.Application.Interfaces.Services;
+using TaskManagement.Domain.Enums;
 
 namespace TaskManagement.Application.Services
 {
@@ -18,16 +18,16 @@ namespace TaskManagement.Application.Services
             _jwtSettings = options.Value;
         }
 
-        public string GenerateToken(long userId, string email, IEnumerable<string> roles)
+        public string GenerateToken(long userId, string email, string userName, UserRole role)
         {
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, email),
+                new Claim(ClaimTypes.Sid, userId.ToString()),
+                new Claim(ClaimValueTypes.Email, email),
+                new Claim(ClaimTypes.Name, userName),
+                new Claim(ClaimTypes.Role, role.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
-
-            claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

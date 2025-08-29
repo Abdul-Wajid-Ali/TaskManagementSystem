@@ -63,7 +63,7 @@ namespace TaskManagement.Application.Services
             if (dto.AssignedUserIds != null && dto.AssignedUserIds.Count > 1)
                 await _repository.AssignUsersToTaskAsync(existingTask, dto.AssignedUserIds);
 
-            existingTask.Title ??= dto.Title;
+            existingTask.Title = dto.Title ?? existingTask.Title;
             existingTask.Description ??= dto.Description;
             existingTask.Status = dto.Status;
             existingTask.DueDate = dto.DueDate ?? existingTask.DueDate;

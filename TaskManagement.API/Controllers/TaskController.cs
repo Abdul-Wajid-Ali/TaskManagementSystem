@@ -8,7 +8,7 @@ namespace TaskManagement.API.Controllers
      /// Controller for managing tasks.
      /// </summary>
     [ApiController]
-    [Route("api/tasks")]
+    [Route("api/[controller]")]
     public class TaskController : ControllerBase
     {
         private readonly ITaskService _taskService;
