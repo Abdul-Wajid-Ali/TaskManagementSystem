@@ -1,12 +1,19 @@
-﻿using TaskManagement.Domain.Enums;
+﻿using System.ComponentModel.DataAnnotations;
+using TaskManagement.Domain.Enums;
 
 namespace TaskManagement.Application.DTOs.Users
 {
     public class UpdateUserDto
     {
-        public string Email { get; set; } = default!;
-        public string Username { get; set; } = default!;
-        public string Password { get; set; } = default!;
-        public UserRole Role { get; set; }
+        [MaxLength(300)]
+        public string? Email { get; set; }
+
+        [MaxLength(200)]
+        public string? Username { get; set; }
+
+        [MaxLength(1000)]
+        public string? Password { get; set; } = default!;
+
+        public UserRole? Role { get; set; }
     }
 }

@@ -66,7 +66,7 @@ namespace TaskManagement.Application.Services
             existingTask.Title ??= dto.Title;
             existingTask.Description ??= dto.Description;
             existingTask.Status = dto.Status;
-            existingTask.DueDate ??= dto.DueDate;
+            existingTask.DueDate = dto.DueDate ?? existingTask.DueDate;
             existingTask.UpdatedOn = DateTime.UtcNow;
 
             return await _repository.UpdateTaskAsync(existingTask);

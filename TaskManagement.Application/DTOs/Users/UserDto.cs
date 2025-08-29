@@ -6,13 +6,20 @@ namespace TaskManagement.Application.DTOs.Users
 {
     public record UserDto
     {
-        public long Id { get; init; }
+        public long Id { get; init; } = default!;
+
         public string Email { get; init; } = default!;
+
         public string Username { get; init; } = default!;
-        public UserCreationMethod CreationMethod { get; init; }
-        public UserRole Role { get; init; }
+
+        public UserCreationMethod CreationMethod { get; init; } = default!;
+
+        public UserRole Role { get; init; } = default!;
+
         public long? CreatedByUserId { get; init; }
-        public DateTime CreatedOn { get; init; }
-        public DateTime UpdatedOn { get; init; }
+
+        public DateTime CreatedOn { get; init; } = default!;
+
+        public DateTime? UpdatedOn { get; init; }
     }
 }

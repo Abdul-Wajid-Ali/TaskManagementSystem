@@ -22,7 +22,7 @@ namespace TaskManagement.Domain.Entities
         public UserRole Role { get; set; }
 
         // Tracking
-        public long CreatedByUserId { get; set; }
+        public long? CreatedByUserId { get; set; }
         public DateTime? CreatedOn { get; set; } 
         public DateTime? UpdatedOn { get; set; } 
         public DateTime? DeletedOn { get; set; }

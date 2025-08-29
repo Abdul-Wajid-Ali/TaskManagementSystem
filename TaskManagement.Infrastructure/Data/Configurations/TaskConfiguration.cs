@@ -20,7 +20,7 @@ namespace TaskManagement.Infrastructure.Data.Configurations
                    .IsRequired(true)
                    .HasMaxLength(200);
 
-            // Description - Optional (nullable by default)
+            // Description - Required
             builder.Property(t => t.Description).IsRequired(false).HasMaxLength(2000);
 
             // Status - Required, default value = Pending
@@ -28,8 +28,8 @@ namespace TaskManagement.Infrastructure.Data.Configurations
                    .IsRequired(true)
                    .HasDefaultValue(TaskProgress.Pending);
 
-            // DueDate - Optional
-            builder.Property(t => t.DueDate).IsRequired(false);
+            // DueDate - Required
+            builder.Property(t => t.DueDate);
 
             // CompletedOn - Optional
             builder.Property(t => t.CompletedOn).IsRequired(false); 

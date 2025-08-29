@@ -11,6 +11,9 @@ namespace TaskManagement.Application.Mappings
             // Entity -> DTO
             CreateMap<User, UserDto>();
 
+            // RequestDto -> DTO
+            CreateMap<UpdateUserDto, CreateUserDto>();
+
             // CreateUserDto -> Entity
             CreateMap<CreateUserDto, User>();
 

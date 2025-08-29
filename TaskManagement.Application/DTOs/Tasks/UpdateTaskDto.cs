@@ -7,15 +7,16 @@ namespace TaskManagement.Application.DTOs.Tasks
 {
     public record UpdateTaskDto
     {
-        [Required, MaxLength(200)]
+        [MaxLength(200)]
         public string? Title { get; init; }
 
         [MaxLength(2000)]
         public string? Description { get; init; }
-        public TaskProgress Status { get; init; }
+
+        public TaskProgress Status { get; init; } = default!;
+
         public List<long>? AssignedUserIds { get; init; } = new();
 
-        [DataType(DataType.Date)]
         public DateOnly? DueDate { get; init; }
     }
 }

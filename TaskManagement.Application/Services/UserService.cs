@@ -10,16 +10,21 @@ namespace TaskManagement.Application.Services
     {
         private readonly IMapper _mapper;
         private readonly IUserRepository _repository;
+        private readonly IPasswordService _passwordService;
 
-        public UserService(IMapper mapper, IUserRepository repository)
+        public UserService(IMapper mapper, IUserRepository repository, IPasswordService passwordService)
         {
             _mapper = mapper;
             _repository = repository;
+            _passwordService = passwordService;
         }
 
         public async Task<long> CreateUserAsync(CreateUserDto dto)
         {
             var newUser = _mapper.Map<User>(dto);
+
+            newUser.PasswordSalt = _passwordService.GenerateSalt();
+            newUser.PasswordHash = _passwordService.HashPassword(dto.Password, newUser.PasswordSalt);
 
             await _repository.CreateUserAsync(newUser);
 
@@ -57,14 +62,15 @@ namespace TaskManagement.Application.Services
             if (existingUser == null)
                 return false;
 
+            if (!string.IsNullOrEmpty(dto.Password))
+            {
+                existingUser.PasswordSalt = _passwordService.GenerateSalt();
+                existingUser.PasswordHash = _passwordService.HashPassword(dto.Password, existingUser.PasswordSalt);
+            }
+
             existingUser.Email ??= dto.Email;
             existingUser.Username ??= dto.Username;
-
-            //Update Password Logic For Later
-            //existingUser.PasswordHash= dto.Status;
-            //existingUser.PasswordHash= dto.Status;
-
-            existingUser.Role = dto.Role;
+            existingUser.Role = dto.Role ?? existingUser.Role;
 
             return await _repository.UpdateUserAsync(existingUser);
         }

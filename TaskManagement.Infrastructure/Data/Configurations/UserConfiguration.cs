@@ -33,7 +33,8 @@ namespace TaskManagement.Infrastructure.Data.Configurations
             builder.HasOne(u => u.CreatedByUser)
                 .WithMany()
                 .HasForeignKey(u => u.CreatedByUserId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
 
             // CreatedOn - Only set on add, default value = current UTC date/time
             builder.Property(t => t.CreatedOn)

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using TaskManagement.API.Responses;
 using TaskManagement.Application.DTOs.Users;
 using TaskManagement.Application.Interfaces.Services;
@@ -11,14 +12,16 @@ namespace TaskManagement.API.Controllers
     [Route("api/users")]
     public class UserController : ControllerBase
     {
+        private readonly IMapper _mapper;
         private readonly IUserService _userService;
 
         /// <summary>
         /// Constructor for UserController.
         /// </summary>
         /// <param name="userService">Service for user operations.</param>
-        public UserController(IUserService userService)
+        public UserController(IMapper mapper,IUserService userService)
         {
+            _mapper = mapper;
             _userService = userService;
         }
 
@@ -35,8 +38,9 @@ namespace TaskManagement.API.Controllers
             if (dto == null || string.IsNullOrWhiteSpace(dto.Email))
                 return BadRequest(ApiResponse<Object>.FailResponse("Invalid User Data!"));
 
-            var taskId = await _userService.CreateUserAsync(dto);
-            return Ok(ApiResponse<long>.SuccessResponse(taskId, "User Created Successfully."));
+
+            var userId = await _userService.CreateUserAsync(dto);
+            return Ok(ApiResponse<long>.SuccessResponse(userId, "User Created Successfully."));
         }
 
         /// <summary>
@@ -83,6 +87,8 @@ namespace TaskManagement.API.Controllers
         {
             if (dto == null)
                 return BadRequest(ApiResponse<object>.FailResponse("Invalid User data"));
+
+            var userDto = _mapper.Map<UpdateUserDto>(dto);
 
             var updated = await _userService.UpdateUserAsync(id, dto);
 

@@ -7,15 +7,16 @@ namespace TaskManagement.Application.DTOs.Tasks
 {
     public record CreateTaskDto
     {
-        [Required, MaxLength(200)]
-        public string? Title { get; init; }
+        [MaxLength(200)]
+        public string Title { get; init; } = default!;
 
         [MaxLength(2000)]
-        public string? Description { get; init; }
-        public long CreatedByUserId { get; set; }
+        public string Description { get; init; } = default!;
+
+        public TaskProgress Status { get; init; } = default!;
+
         public List<long>? AssignedUserIds { get; init; } = new();
 
-        [DataType(DataType.Date)]
-        public DateOnly? DueDate { get; init; }
+        public DateOnly DueDate { get; init; } = default!;
     }
 }
