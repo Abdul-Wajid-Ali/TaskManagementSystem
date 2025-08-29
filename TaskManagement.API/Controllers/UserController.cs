@@ -50,65 +50,65 @@ namespace TaskManagement.API.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
         public async Task<IActionResult> GetUser(long id)
         {
-            var task = await _userService.GetUserByIdAsync(id);
+            var user = await _userService.GetUserByIdAsync(id);
 
-            if (task == null)
-                return NotFound(ApiResponse<object>.FailResponse("Task not found"));
+            if (user == null)
+                return NotFound(ApiResponse<object>.FailResponse("User not found"));
 
-            return Ok(ApiResponse<TaskDto>.SuccessResponse(task));
+            return Ok(ApiResponse<UserDto>.SuccessResponse(user));
         }
 
         /// <summary>
-        /// Retrieves all tasks.
+        /// Retrieves all Users.
         /// </summary>
-        /// <returns>List of tasks.</returns>
+        /// <returns>List of users.</returns>
         [HttpGet("all")]
-        [ProducesResponseType(typeof(ApiResponse<IEnumerable<TaskDto>>), 200)]
-        public async Task<IActionResult> GetAllTasks()
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<UserDto>>), 200)]
+        public async Task<IActionResult> GetAllUsers()
         {
-            var tasks = await _taskService.GetAllTasksAsync();
-            return Ok(ApiResponse<IEnumerable<TaskDto>>.SuccessResponse(tasks));
+            var users = await _userService.GetAllUsersAsync();
+            return Ok(ApiResponse<IEnumerable<UserDto>>.SuccessResponse(users));
         }
 
         /// <summary>
-        /// Updates an existing task.
+        /// Updates an existing user.
         /// </summary>
-        /// <param name="id">Task Id.</param>
-        /// <param name="dto">Task data for update.</param>
+        /// <param name="id">User Id.</param>
+        /// <param name="dto">User data for update.</param>
         /// <returns>Status of the update.</returns>
         [HttpPut("{id:long}/update")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 400)]
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
-        public async Task<IActionResult> UpdateTask(long id, [FromBody] UpdateTaskDto dto)
+        public async Task<IActionResult> UpdateUser(long id, [FromBody] UpdateUserDto dto)
         {
             if (dto == null)
-                return BadRequest(ApiResponse<object>.FailResponse("Invalid task data"));
+                return BadRequest(ApiResponse<object>.FailResponse("Invalid User data"));
 
-            var updated = await _taskService.UpdateTaskAsync(id, dto);
+            var updated = await _userService.UpdateUserAsync(id, dto);
 
             if (!updated)
-                return NotFound(ApiResponse<object>.FailResponse("Task not found or already deleted"));
+                return NotFound(ApiResponse<object>.FailResponse("User not found or already deleted"));
 
-            return Ok(ApiResponse<object>.SuccessResponse(new { Id = id }, "Task updated successfully"));
+            return Ok(ApiResponse<object>.SuccessResponse(new { Id = id }, "User updated successfully"));
         }
 
         /// <summary>
-        /// Soft deletes a task by marking it as deleted.
+        /// Soft deletes a user by marking it as deleted.
         /// </summary>
-        /// <param name="id">Task Id.</param>
+        /// <param name="id">User Id.</param>
         /// <returns>Status of deletion.</returns>
         [HttpDelete("{id:long}/delete")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
-        public async Task<IActionResult> DeleteTask(long id)
+        public async Task<IActionResult> DeleteUser(long id)
         {
-            var deleted = await _taskService.SoftDeleteTaskAsync(id);
+            var deleted = await _userService.SoftDeleteUserAsync(id);
 
             if (!deleted)
-                return NotFound(ApiResponse<object>.FailResponse("Task not found or already deleted"));
+                return NotFound(ApiResponse<object>.FailResponse("User not found or already deleted"));
 
-            return Ok(ApiResponse<object>.SuccessResponse(new { Id = id }, "Task deleted successfully"));
+            return Ok(ApiResponse<object>.SuccessResponse(new { Id = id }, "User deleted successfully"));
         }
     }
 }
