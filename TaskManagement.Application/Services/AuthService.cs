@@ -7,8 +7,21 @@ using TaskManagement.Domain.Enums;
 
 namespace TaskManagement.Application.Services
 {
-    public class AuthService(IMapper _mapper, IUserRepository _repository, IPasswordService _passwordService, IJwtTokenService _tokenService) : IAuthService
+    public class AuthService : IAuthService
     {
+        private readonly IMapper _mapper;
+        private readonly IJwtTokenService _tokenService;
+        private readonly IUserRepository _repository;
+        private readonly IPasswordService _passwordService;
+
+        public AuthService(IMapper mapper, IUserRepository repository, IPasswordService passwordService, IJwtTokenService tokenService)
+        {
+            _mapper = mapper;
+            _repository = repository;
+            _passwordService = passwordService;
+            _tokenService = tokenService;
+        }
+
         // Register a new user and return the registered user's details
         public async Task<RegisterRequestDto> RegisterUserAsync(RegisterRequestDto dto)
         {

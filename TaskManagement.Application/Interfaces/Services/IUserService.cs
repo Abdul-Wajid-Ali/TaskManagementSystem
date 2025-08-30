@@ -11,7 +11,7 @@ namespace TaskManagement.Application.Interfaces.Services
 
         Task<UserDto?> GetUserByIdAsync(long id);
 
-        Task<IEnumerable<UserDto>> GetAllUsersAsync();
+        Task<IEnumerable<UserDto>?> GetAllUsersAsync();
 
         Task<bool> UpdateUserAsync(long userId, UpdateUserDto dto);
 

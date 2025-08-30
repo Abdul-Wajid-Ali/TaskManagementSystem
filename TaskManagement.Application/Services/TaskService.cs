@@ -29,16 +29,37 @@ namespace TaskManagement.Application.Services
             return newTask.Id;
         }
 
-        public async Task<IEnumerable<TaskDto>> GetAllTasksAsync()
+        public async Task<IEnumerable<TaskDto>?> GetAllTasksAsync()
         {
-            return await _repository.GetAllTasksAsync()
+            var taskList = await _repository.GetAllTasksAsync()
                 .ContinueWith(item => _mapper.Map<IEnumerable<TaskDto>>(item.Result));
+
+            if (taskList == null || !taskList.Any())
+                return null;
+
+            return taskList;
         }
 
         public async Task<TaskDto?> GetTaskByIdAsync(long id)
         {
-            return await _repository.GetTaskByIdAsync(id)
+            var task = await _repository.GetTaskByIdAsync(id)
                 .ContinueWith(item => _mapper.Map<TaskDto?>(item.Result));
+
+            if (task == null)
+                return null;
+
+            return task;
+        }
+
+        public async Task<IEnumerable<TaskDto>?> GetUserTasks(long userId)
+        {
+            var userTasks = await _repository.GetUserTasks(userId)
+                .ContinueWith(item => _mapper.Map<List<TaskDto>>(item.Result));
+
+            if (userTasks == null || !userTasks.Any())
+                return null;
+
+            return userTasks;
         }
 
         public async Task<bool> SoftDeleteTaskAsync(long id)
@@ -50,7 +71,7 @@ namespace TaskManagement.Application.Services
 
             existingTask.DeletedOn = DateTime.UtcNow;
 
-            return await _repository.SoftDeleteTaskAsync(existingTask);
+            return await _repository.UpdateTaskAsync(existingTask);
         }
 
         public async Task<bool> UpdateTaskAsync(long taskId, UpdateTaskDto dto)
@@ -64,7 +85,7 @@ namespace TaskManagement.Application.Services
                 await _repository.AssignUsersToTaskAsync(existingTask, dto.AssignedUserIds);
 
             existingTask.Title = dto.Title ?? existingTask.Title;
-            existingTask.Description ??= dto.Description;
+            existingTask.Description = dto.Description ?? existingTask.Description;
             existingTask.Status = dto.Status;
             existingTask.DueDate = dto.DueDate ?? existingTask.DueDate;
             existingTask.UpdatedOn = DateTime.UtcNow;

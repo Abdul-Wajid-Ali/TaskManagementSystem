@@ -1,4 +1,5 @@
 ﻿using TaskManagement.Application.DTOs.Tasks;
+using TaskManagement.Domain.Entities;
 
 namespace TaskManagement.Application.Interfaces.Services
 {
@@ -8,7 +9,9 @@ namespace TaskManagement.Application.Interfaces.Services
 
         Task<TaskDto?> GetTaskByIdAsync(long id);
 
-        Task<IEnumerable<TaskDto>> GetAllTasksAsync();
+        Task<IEnumerable<TaskDto>?> GetUserTasks(long userId);
+
+        Task<IEnumerable<TaskDto>?> GetAllTasksAsync();
 
         Task<bool> UpdateTaskAsync(long taskId, UpdateTaskDto dto);
 

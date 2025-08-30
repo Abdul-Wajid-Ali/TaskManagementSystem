@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TaskManagement.API.Extensions;
 using TaskManagement.API.Responses;
 using TaskManagement.Application.DTOs.Tasks;
 using TaskManagement.Application.Interfaces.Services;
@@ -17,8 +18,8 @@ namespace TaskManagement.API.Controllers
         /// </summary>
         /// <param name="dto">Task data for creation.</param>
         /// <returns>Id of the newly created task with success message.</returns>
-        [HttpPost("create")]
         [Authorize(Roles = "Admin")]
+        [HttpPost("create")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 400)]
         public async Task<IActionResult> CreateTask([FromBody] CreateTaskDto dto)
@@ -49,6 +50,29 @@ namespace TaskManagement.API.Controllers
         }
 
         /// <summary>
+        /// Retrieves a task by its Id.
+        /// </summary>
+        /// <param name="id">Task Id.</param>
+        /// <returns>Task details.</returns>
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<TaskDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 404)]
+        public async Task<IActionResult> GetMyTasks()
+        {
+            var userId = User.GetCurrentUserId();
+
+            if (userId == null)
+                return BadRequest(ApiResponse<object>.FailResponse("Invalid User Id"));
+
+            var task = await _taskService.GetTaskByIdAsync((long)userId);
+
+            if (task == null)
+                return NotFound(ApiResponse<object>.FailResponse("Task not found"));
+
+            return Ok(ApiResponse<TaskDto>.SuccessResponse(task));
+        }
+
+        /// <summary>
         /// Retrieves all tasks.
         /// </summary>
         /// <returns>List of tasks.</returns>
@@ -57,6 +81,10 @@ namespace TaskManagement.API.Controllers
         public async Task<IActionResult> GetAllTasks()
         {
             var tasks = await _taskService.GetAllTasksAsync();
+
+            if (tasks == null || !tasks.Any())
+                return Ok(ApiResponse<IEnumerable<TaskDto>>.SuccessResponse([], "No tasks found"));
+
             return Ok(ApiResponse<IEnumerable<TaskDto>>.SuccessResponse(tasks));
         }
 

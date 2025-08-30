@@ -24,7 +24,7 @@ namespace TaskManagement.Infrastructure.Repositories
         }
 
         // Get all tasks filter out deleted ones
-        public async Task<IEnumerable<Task>> GetAllTasksAsync()
+        public async Task<IEnumerable<Task>?> GetAllTasksAsync()
         {
             return await _dbContext.Tasks.AsNoTracking()
                 .Include(t => t.UserTasks)
@@ -41,12 +41,13 @@ namespace TaskManagement.Infrastructure.Repositories
                 .FirstOrDefaultAsync(item => item.Id == id);
         }
 
-        // Soft delete a task (mark DeletedOn)
-        public async Task<bool> SoftDeleteTaskAsync(Task task)
+        // Get tasks assigned to a specific user
+        public async Task<IEnumerable<UserTask>?> GetUserTasks(long userId)
         {
-            _dbContext.Tasks.Update(task);
-            await _dbContext.SaveChangesAsync();
-            return true;
+            return await _dbContext.UsersTasks.AsNoTracking()
+                .Where(item => item.UserId == userId)
+                .Include(item => item.Task)
+                .Where(item => item.Task.DeletedOn == null).ToListAsync();
         }
 
         // Update an existing task

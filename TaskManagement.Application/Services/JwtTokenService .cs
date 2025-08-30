@@ -18,6 +18,7 @@ namespace TaskManagement.Application.Services
             _jwtSettings = options.Value;
         }
 
+        // Generate JWT token based on user claims
         public string GenerateToken(UserClaimsDto dto)
         {
             // Build list of claims (user identity + metadata)

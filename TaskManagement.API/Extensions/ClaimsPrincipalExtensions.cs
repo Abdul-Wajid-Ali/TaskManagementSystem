@@ -11,10 +11,7 @@ namespace TaskManagement.API.Extensions
         /// <returns>User ID as long if found, otherwise null.</returns>
         public static long? GetCurrentUserId(this ClaimsPrincipal user)
         {
-            if (user == null)
-                return null;
-
-            var userIdClaim = user.FindFirst(ClaimTypes.Sid) ?? user.FindFirst("userId");
+            var userIdClaim = user.FindFirst(ClaimTypes.Sid) ?? user.FindFirst("Id");
 
             if (userIdClaim == null)
                 return null;
@@ -37,10 +34,10 @@ namespace TaskManagement.API.Extensions
 
             var userRoleClaim = user.FindFirst(ClaimTypes.Email) ?? user.FindFirst("Email");
 
-            if (userRoleClaim == null)
-                return null;
+            if (userRoleClaim != null)
+                return userRoleClaim.Value;
 
-            return userRoleClaim.Value;
+            return null;
         }
     }
 }

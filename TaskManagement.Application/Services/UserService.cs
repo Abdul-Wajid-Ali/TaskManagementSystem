@@ -8,11 +8,18 @@ using TaskManagement.Domain.Enums;
 
 namespace TaskManagement.Application.Services
 {
-    public class UserService(IMapper mapper, IUserRepository repository, IPasswordService passwordService) : IUserService
+    public class UserService : IUserService
     {
-        private readonly IMapper _mapper = mapper;
-        private readonly IUserRepository _repository = repository;
-        private readonly IPasswordService _passwordService = passwordService;
+        private readonly IMapper _mapper;
+        private readonly IUserRepository _repository;
+        private readonly IPasswordService _passwordService;
+
+        public UserService(IMapper mapper, IUserRepository repository, IPasswordService passwordService)
+        {
+            _mapper = mapper;
+            _repository = repository;
+            _passwordService = passwordService;
+        }
 
         public async Task<long> CreateUserAsync(CreateUserDto dto)
         {
@@ -41,16 +48,26 @@ namespace TaskManagement.Application.Services
             return newUser.Id;
         }
 
-        public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
+        public async Task<IEnumerable<UserDto>?> GetAllUsersAsync()
         {
-            return await _repository.GetAllUsersAsync()
+            var usersList = await _repository.GetAllUsersAsync()
                 .ContinueWith(item => _mapper.Map<IEnumerable<UserDto>>(item.Result));
+
+            if (usersList == null || !usersList.Any())
+                return null;
+
+            return usersList;
         }
 
         public async Task<UserDto?> GetUserByIdAsync(long id)
         {
-            return await _repository.GetUserByIdAsync(id)
+            var user = await _repository.GetUserByIdAsync(id)
                 .ContinueWith(item => _mapper.Map<UserDto?>(item.Result));
+
+            if (user == null)
+                return null;
+
+            return user;
         }
 
         public async Task<bool> SoftDeleteUserAsync(long id)
@@ -78,8 +95,8 @@ namespace TaskManagement.Application.Services
                 existingUser.PasswordHash = _passwordService.HashPassword(dto.Password, existingUser.PasswordSalt);
             }
 
-            existingUser.Email ??= dto.Email;
-            existingUser.Username ??= dto.Username;
+            existingUser.Email = dto.Email ?? existingUser.Email;
+            existingUser.Username = dto.Username ?? existingUser.Username;
             existingUser.Role = dto.Role ?? existingUser.Role;
 
             return await _repository.UpdateUserAsync(existingUser);

@@ -16,7 +16,7 @@ namespace TaskManagement.Infrastructure.Repositories
         }
 
         // Get all Users that are not soft-deleted
-        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        public async Task<IEnumerable<User>?> GetAllUsersAsync()
         {
             return await _dbContext.Users.AsNoTracking()
                 .Where(t => t.DeletedOn == null)
