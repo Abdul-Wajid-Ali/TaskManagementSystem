@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using TaskManagement.Domain.Enums;
+﻿using TaskManagement.Domain.Enums;
 
 namespace TaskManagement.Domain.Entities
 {
@@ -8,23 +7,24 @@ namespace TaskManagement.Domain.Entities
         public long Id { get; set; }
 
         // Core fields
-        public string? Email { get; set; }
+        public string Email { get; set; } = default!; // Unique constraint in DB
 
-        public string? Username { get; set; }
+        public string Username { get; set; } = default!;
 
-        public string? PasswordHash { get; set; } // Store hash, not raw password
+        public string PasswordHash { get; set; } = default!;// Store hash, not raw password
 
-        public string? PasswordSalt { get; set; }
+        public string PasswordSalt { get; set; } = default!;
 
         // Business rules
-        public UserCreationMethod CreationMethod { get; set; }
+        public UserCreationMethod CreationMethod { get; set; } = default!;
 
-        public UserRole Role { get; set; }
+        public UserRole Role { get; set; } = default!;
 
         // Tracking
         public long? CreatedByUserId { get; set; }
-        public DateTime? CreatedOn { get; set; } 
-        public DateTime? UpdatedOn { get; set; } 
+
+        public DateTime CreatedOn { get; set; } = default!;
+        public DateTime? UpdatedOn { get; set; }
         public DateTime? DeletedOn { get; set; }
 
         // Navigation

@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using TaskManagement.Application.DTOs.Auth;
 using TaskManagement.Application.DTOs.Users;
 using TaskManagement.Domain.Entities;
 
@@ -17,9 +16,6 @@ namespace TaskManagement.Application.Mappings
 
             // CreateUserDto -> Entity
             CreateMap<CreateUserDto, User>();
-
-            // RegisterRequestDto -> Entity
-            CreateMap<RegisterRequestDto, User>();
 
             // UpdateUserDto -> Entity
             CreateMap<UpdateUserDto, User>();

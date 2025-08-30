@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TaskManagement.API.Responses;
 using TaskManagement.Application.DTOs.Tasks;
 using TaskManagement.Application.Interfaces.Services;
@@ -9,25 +10,15 @@ namespace TaskManagement.API.Controllers
      /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    public class TaskController : ControllerBase
+    public class TaskController(ITaskService _taskService) : ControllerBase
     {
-        private readonly ITaskService _taskService;
-
-        /// <summary>
-        /// Constructor for TaskController.
-        /// </summary>
-        /// <param name="taskService">Service for task operations.</param>
-        public TaskController(ITaskService taskService)
-        {
-            _taskService = taskService;
-        }
-
         /// <summary>
         /// Creates a new task.
         /// </summary>
         /// <param name="dto">Task data for creation.</param>
         /// <returns>Id of the newly created task with success message.</returns>
         [HttpPost("create")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 400)]
         public async Task<IActionResult> CreateTask([FromBody] CreateTaskDto dto)

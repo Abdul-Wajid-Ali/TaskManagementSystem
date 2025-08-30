@@ -8,9 +8,9 @@ namespace TaskManagement.Domain.Entities
 
         public string Title { get; set; } = default!;
 
-        public string? Description { get; set; } = default!;
+        public string Description { get; set; } = default!;
 
-        public TaskProgress Status { get; set; } = TaskProgress.Pending;
+        public TaskProgress Status { get; set; } = default!;
 
         // 🔹 Link to Admin (creator)
         public long CreatedByUserId { get; set; } = default!;

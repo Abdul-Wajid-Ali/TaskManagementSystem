@@ -1,9 +1,9 @@
-﻿using TaskManagement.Domain.Enums;
+﻿using TaskManagement.Application.DTOs.Auth;
 
 namespace TaskManagement.Application.Interfaces.Services
 {
     public interface IJwtTokenService
     {
-        string GenerateToken(long userId, string email, string userName, UserRole role);
+        string GenerateToken(UserClaimsDto dto);
     }
 }

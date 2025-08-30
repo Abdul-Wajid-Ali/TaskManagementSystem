@@ -2,7 +2,7 @@
 {
     public enum UserCreationMethod
     {
-        SignedUp = 1,
+        Registered = 1,
         CreatedByAdmin = 2
     }
 }

@@ -8,10 +8,10 @@ namespace TaskManagement.Application.Interfaces.Repositories
 
         Task<User?> GetUserByIdAsync(long id);
 
+        Task<User?> GetUserByEmailAsync(string email);
+
         Task<IEnumerable<User>> GetAllUsersAsync();
 
         Task<bool> UpdateUserAsync(User user);
-
-        Task<bool> SoftDeleteUserAsync(User user);
     }
 }

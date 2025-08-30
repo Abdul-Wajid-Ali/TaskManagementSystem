@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskManagement.API.Responses;
 using TaskManagement.Application.DTOs.Users;
@@ -9,20 +9,10 @@ namespace TaskManagement.API.Controllers
      /// Controller for managing users.
      /// </summary>
     [ApiController]
+    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
-    public class UserController : ControllerBase
+    public class UserController(IUserService _userService) : ControllerBase
     {
-        private readonly IUserService _userService;
-
-        /// <summary>
-        /// Constructor for UserController.
-        /// </summary>
-        /// <param name="userService">Service for user operations.</param>
-        public UserController(IMapper mapper, IUserService userService)
-        {
-            _userService = userService;
-        }
-
         /// <summary>
         /// Creates a new user.
         /// </summary>

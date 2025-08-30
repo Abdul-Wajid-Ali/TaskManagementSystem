@@ -3,7 +3,7 @@ using TaskManagement.Domain.Enums;
 
 namespace TaskManagement.Application.DTOs.Auth
 {
-    public class UserProfileDto
+    public class LoginResponseDto
     {
         [MaxLength(300)]
         public string Email { get; set; } = default!;
@@ -18,5 +18,7 @@ namespace TaskManagement.Application.DTOs.Auth
         public long? CreatedByUserId { get; init; }
 
         public DateTime CreatedOn { get; init; } = default!;
+
+        public string Token { get; set; } = default!;
     }
 }

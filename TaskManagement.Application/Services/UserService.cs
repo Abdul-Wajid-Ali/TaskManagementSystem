@@ -19,6 +19,7 @@ namespace TaskManagement.Application.Services
             var newUser = _mapper.Map<User>(dto);
 
             newUser.Role = UserRole.Employee;
+            newUser.CreationMethod = UserCreationMethod.CreatedByAdmin;
             newUser.PasswordSalt = _passwordService.GenerateSalt();
             newUser.PasswordHash = _passwordService.HashPassword(dto.Password, newUser.PasswordSalt);
 
@@ -61,7 +62,7 @@ namespace TaskManagement.Application.Services
 
             existingUser.DeletedOn = DateTime.UtcNow;
 
-            return await _repository.SoftDeleteUserAsync(existingUser);
+            return await _repository.UpdateUserAsync(existingUser);
         }
 
         public async Task<bool> UpdateUserAsync(long userId, UpdateUserDto dto)

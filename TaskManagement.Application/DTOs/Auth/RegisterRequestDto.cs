@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using TaskManagement.Domain.Enums;
 
 namespace TaskManagement.Application.DTOs.Auth
@@ -15,7 +16,5 @@ namespace TaskManagement.Application.DTOs.Auth
         public string Password { get; set; } = default!;
 
         public UserRole Role { get; set; } = default!;
-
-        public long CreatedByUserId { get; set; } = default!;
     }
 }

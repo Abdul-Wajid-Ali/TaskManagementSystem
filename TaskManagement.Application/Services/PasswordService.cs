@@ -28,7 +28,7 @@ namespace TaskManagement.Application.Services
         public bool VerifyPassword(string password, string salt, string hash)
         {
             var enteredHash = HashPassword(password, salt);
-            return hash == enteredHash;
+            return String.Equals(hash, enteredHash);
         }
     }
 }

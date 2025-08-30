@@ -5,15 +5,8 @@ using TaskManagement.Infrastructure.Data;
 
 namespace TaskManagement.Infrastructure.Repositories
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository(AppDbContext _dbContext) : IUserRepository
     {
-        public readonly AppDbContext _dbContext;
-
-        public UserRepository(AppDbContext dbContext)
-        {
-            _dbContext = dbContext;
-        }
-
         // Create a new User and return its Id
         public async Task<long> CreateUserAsync(User user)
         {
@@ -22,6 +15,7 @@ namespace TaskManagement.Infrastructure.Repositories
             return user.Id;
         }
 
+        // Get all Users that are not soft-deleted
         public async Task<IEnumerable<User>> GetAllUsersAsync()
         {
             return await _dbContext.Users.AsNoTracking()
@@ -29,6 +23,7 @@ namespace TaskManagement.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        // Get a User by Id if not soft-deleted
         public async Task<User?> GetUserByIdAsync(long id)
         {
             return await _dbContext.Users.AsNoTracking()
@@ -36,13 +31,15 @@ namespace TaskManagement.Infrastructure.Repositories
                 .FirstOrDefaultAsync(item => item.Id == id);
         }
 
-        public async Task<bool> SoftDeleteUserAsync(User user)
+        // Get a User by Email if not soft-deleted
+        public async Task<User?> GetUserByEmailAsync(string email)
         {
-            _dbContext.Users.Update(user);
-            await _dbContext.SaveChangesAsync();
-            return true;
+            return await _dbContext.Users.AsNoTracking()
+                .Where(item => item.DeletedOn == null)
+                .FirstOrDefaultAsync(item => string.Equals(item.Email, email));
         }
 
+        // Update/Soft Delete an existing User
         public async Task<bool> UpdateUserAsync(User user)
         {
             _dbContext.Users.Update(user);
