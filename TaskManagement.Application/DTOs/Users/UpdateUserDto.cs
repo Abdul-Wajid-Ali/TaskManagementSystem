@@ -13,7 +13,5 @@ namespace TaskManagement.Application.DTOs.Users
 
         [MaxLength(1000)]
         public string? Password { get; set; } = default!;
-
-        public UserRole? Role { get; set; }
     }
 }

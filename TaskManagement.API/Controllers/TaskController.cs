@@ -50,7 +50,7 @@ namespace TaskManagement.API.Controllers
         }
 
         /// <summary>
-        /// Retrieves a task by its Id.
+        /// Retrieves a task for logged-in user.
         /// </summary>
         /// <param name="id">Task Id.</param>
         /// <returns>Task details.</returns>

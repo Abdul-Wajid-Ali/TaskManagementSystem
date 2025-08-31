@@ -1,5 +1,4 @@
 ﻿using TaskManagement.Application.DTOs.Tasks;
-using TaskManagement.Domain.Entities;
 
 namespace TaskManagement.Application.Interfaces.Services
 {

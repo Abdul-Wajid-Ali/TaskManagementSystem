@@ -53,28 +53,19 @@ namespace TaskManagement.API.Extensions
             services.AddScoped<IAuthService, AuthService>();
 
             // Authentication / JWT
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
-                    ValidateAudience = false,
+                    ValidIssuer = jwtSettings.Issuer,
+                    ValidateAudience = true,
+                    ValidAudience = jwtSettings.Audience,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
                 };
-            });
-
-            //Authorization with roles
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("PrivilegedUsers", policy =>
-                    policy.RequireRole("Admin", "Employee"));
             });
 
             // ✅ NEW in .NET 9 — expose OpenAPI endpoints

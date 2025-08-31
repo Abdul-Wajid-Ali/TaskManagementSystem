@@ -1,20 +1,18 @@
-﻿using TaskManagement.Application.DTOs.Auth;
+﻿using TaskManagement.Application.Common;
 using TaskManagement.Application.DTOs.Users;
 
 namespace TaskManagement.Application.Interfaces.Services
 {
     public interface IUserService
     {
-        Task<long> CreateUserAsync(CreateUserDto dto);
+        Task<Result<long>> CreateUserAsync(CreateUserDto dto);
 
-        Task<long> RegisterUserAsync(RegisterRequestDto dto);
+        Task<Result<UserDto>> GetUserByIdAsync(long id);
 
-        Task<UserDto?> GetUserByIdAsync(long id);
+        Task<Result<IEnumerable<UserDto>>> GetAllUsersAsync();
 
-        Task<IEnumerable<UserDto>?> GetAllUsersAsync();
+        Task<Result<bool>> SoftDeleteUserAsync(long id);
 
-        Task<bool> UpdateUserAsync(long userId, UpdateUserDto dto);
-
-        Task<bool> SoftDeleteUserAsync(long id);
+        Task<Result<UserDto>> UpdateUserAsync(long userId, UpdateUserDto dto);
     }
 }

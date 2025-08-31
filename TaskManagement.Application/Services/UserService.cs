@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using TaskManagement.Application.DTOs.Auth;
+using TaskManagement.Application.Common;
 using TaskManagement.Application.DTOs.Users;
 using TaskManagement.Application.Interfaces.Repositories;
 using TaskManagement.Application.Interfaces.Services;
@@ -21,8 +21,11 @@ namespace TaskManagement.Application.Services
             _passwordService = passwordService;
         }
 
-        public async Task<long> CreateUserAsync(CreateUserDto dto)
+        public async Task<Result<long>> CreateUserAsync(CreateUserDto dto)
         {
+            if (await _repository.GetUserByEmailAsync(dto.Email) != null)
+                return Result<long>.Fail(ErrorCodes.UserEmailAlreadyExists);
+
             var newUser = _mapper.Map<User>(dto);
 
             newUser.Role = UserRole.Employee;
@@ -32,62 +35,55 @@ namespace TaskManagement.Application.Services
 
             await _repository.CreateUserAsync(newUser);
 
-            return newUser.Id;
+            return Result<long>.Success(newUser.Id, SuccessCodes.UserCreatedSuccessfully);
         }
 
-        public async Task<long> RegisterUserAsync(RegisterRequestDto dto)
-        {
-            var newUser = _mapper.Map<User>(dto);
-
-            newUser.Role = UserRole.Employee;
-            newUser.PasswordSalt = _passwordService.GenerateSalt();
-            newUser.PasswordHash = _passwordService.HashPassword(dto.Password, newUser.PasswordSalt);
-
-            await _repository.CreateUserAsync(newUser);
-
-            return newUser.Id;
-        }
-
-        public async Task<IEnumerable<UserDto>?> GetAllUsersAsync()
+        public async Task<Result<IEnumerable<UserDto>>> GetAllUsersAsync()
         {
             var usersList = await _repository.GetAllUsersAsync()
                 .ContinueWith(item => _mapper.Map<IEnumerable<UserDto>>(item.Result));
 
-            if (usersList == null || !usersList.Any())
-                return null;
-
-            return usersList;
+            return Result<IEnumerable<UserDto>>.Success(usersList);
         }
 
-        public async Task<UserDto?> GetUserByIdAsync(long id)
+        public async Task<Result<UserDto>> GetUserByIdAsync(long id)
         {
             var user = await _repository.GetUserByIdAsync(id)
                 .ContinueWith(item => _mapper.Map<UserDto?>(item.Result));
 
             if (user == null)
-                return null;
+                return Result<UserDto>.Fail(ErrorCodes.UserNotFound);
 
-            return user;
+            return Result<UserDto>.Success(user);
         }
 
-        public async Task<bool> SoftDeleteUserAsync(long id)
+        public async Task<Result<bool>> SoftDeleteUserAsync(long id)
         {
             var existingUser = await _repository.GetUserByIdAsync(id);
 
             if (existingUser == null)
-                return false;
+                return Result<bool>.Fail(ErrorCodes.UserNotFound);
 
             existingUser.DeletedOn = DateTime.UtcNow;
 
-            return await _repository.UpdateUserAsync(existingUser);
+            return Result<bool>.Success(await _repository.UpdateUserAsync(existingUser), SuccessCodes.UserDeletedSucessfully);
         }
 
-        public async Task<bool> UpdateUserAsync(long userId, UpdateUserDto dto)
+        public async Task<Result<UserDto>> UpdateUserAsync(long userId, UpdateUserDto dto)
         {
             var existingUser = await _repository.GetUserByIdAsync(userId);
 
+            // Check if user exists
             if (existingUser == null)
-                return false;
+                return Result<UserDto>.Fail(ErrorCodes.UserNotFound);
+
+            // Check for email uniqueness if email is being updated
+            if (!string.IsNullOrWhiteSpace(dto.Username) && await _repository.GetUserByEmailAsync(dto.Email) != null)
+                return Result<UserDto>.Fail(ErrorCodes.UserEmailAlreadyExists);
+
+            // Update fields if provided
+            existingUser.Email = string.IsNullOrWhiteSpace(dto.Email) ? existingUser.Email : dto.Email;
+            existingUser.Username = string.IsNullOrWhiteSpace(dto.Username) ? existingUser.Username : dto.Username;
 
             if (!string.IsNullOrEmpty(dto.Password))
             {
@@ -95,11 +91,9 @@ namespace TaskManagement.Application.Services
                 existingUser.PasswordHash = _passwordService.HashPassword(dto.Password, existingUser.PasswordSalt);
             }
 
-            existingUser.Email = dto.Email ?? existingUser.Email;
-            existingUser.Username = dto.Username ?? existingUser.Username;
-            existingUser.Role = dto.Role ?? existingUser.Role;
+            await _repository.UpdateUserAsync(existingUser);
 
-            return await _repository.UpdateUserAsync(existingUser);
+            return Result<UserDto>.Success(_mapper.Map<UserDto>(existingUser));
         }
     }
 }

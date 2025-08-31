@@ -18,6 +18,9 @@ namespace TaskManagement.Infrastructure.Data.Configurations
                 .IsRequired(true)
                 .HasMaxLength(300);
 
+            builder.HasIndex(u => u.Email)
+                   .IsUnique();
+
             builder.Property(u => u.Username)
                 .IsRequired(true)
                 .HasMaxLength(300);

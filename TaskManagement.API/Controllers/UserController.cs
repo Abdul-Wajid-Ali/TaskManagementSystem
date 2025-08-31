@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskManagement.API.Responses;
+using TaskManagement.Application.Common;
 using TaskManagement.Application.DTOs.Users;
 using TaskManagement.Application.Interfaces.Services;
 
@@ -10,7 +11,7 @@ namespace TaskManagement.API.Controllers
      /// </summary>
     [ApiController]
     [Authorize(Roles = "Admin")]
-    [Route("api/[controller]")]
+    [Route("api/user")]
     public class UserController(IUserService _userService) : ControllerBase
     {
         /// <summary>
@@ -23,11 +24,12 @@ namespace TaskManagement.API.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 400)]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
         {
-            if (dto == null || string.IsNullOrWhiteSpace(dto.Email))
-                return BadRequest(ApiResponse<Object>.FailResponse("Invalid User Data!"));
+            var result = await _userService.CreateUserAsync(dto);
 
-            var userId = await _userService.CreateUserAsync(dto);
-            return Ok(ApiResponse<long>.SuccessResponse(userId, "User Created Successfully."));
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponse<Object>.FailResponse(result.ErrorCode));
+
+            return Ok(ApiResponse<object>.SuccessResponse(new { data = new { id = result.Data } }, result.SuccessCode));
         }
 
         /// <summary>
@@ -40,12 +42,12 @@ namespace TaskManagement.API.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
         public async Task<IActionResult> GetUser(long id)
         {
-            var user = await _userService.GetUserByIdAsync(id);
+            var result = await _userService.GetUserByIdAsync(id);
 
-            if (user == null)
-                return NotFound(ApiResponse<object>.FailResponse("User not found"));
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponse<Object>.FailResponse(result.ErrorCode));
 
-            return Ok(ApiResponse<UserDto>.SuccessResponse(user));
+            return Ok(ApiResponse<Object>.SuccessResponse(new { data = result.Data }));
         }
 
         /// <summary>
@@ -56,8 +58,9 @@ namespace TaskManagement.API.Controllers
         [ProducesResponseType(typeof(ApiResponse<IEnumerable<UserDto>>), 200)]
         public async Task<IActionResult> GetAllUsers()
         {
-            var users = await _userService.GetAllUsersAsync();
-            return Ok(ApiResponse<IEnumerable<UserDto>>.SuccessResponse(users));
+            var result = await _userService.GetAllUsersAsync();
+
+            return Ok(ApiResponse<Object>.SuccessResponse(new { data = result.Data }));
         }
 
         /// <summary>
@@ -72,15 +75,21 @@ namespace TaskManagement.API.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
         public async Task<IActionResult> UpdateUser(long id, [FromBody] UpdateUserDto dto)
         {
-            if (dto == null)
-                return BadRequest(ApiResponse<object>.FailResponse("Invalid User data"));
+            var result = await _userService.UpdateUserAsync(id, dto);
 
-            var updated = await _userService.UpdateUserAsync(id, dto);
+            if (!result.IsSuccess)
+                return result.ErrorCode switch
+                {
+                    ErrorCodes.UserNotFound
+                        => NotFound(ApiResponse<object>.FailResponse(result.ErrorCode)),
 
-            if (!updated)
-                return NotFound(ApiResponse<object>.FailResponse("User not found or already deleted"));
+                    ErrorCodes.UserEmailAlreadyExists
+                        => Conflict(ApiResponse<object>.FailResponse(result.ErrorCode)),
 
-            return Ok(ApiResponse<object>.SuccessResponse(new { Id = id }, "User updated successfully"));
+                    _ => BadRequest(ApiResponse<object>.FailResponse(ErrorCodes.InternalServerError))
+                };
+
+            return Ok(ApiResponse<object>.SuccessResponse(new { data = result.Data }, SuccessCodes.UserUpdatedSuccessfully));
         }
 
         /// <summary>
@@ -93,12 +102,17 @@ namespace TaskManagement.API.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
         public async Task<IActionResult> DeleteUser(long id)
         {
-            var deleted = await _userService.SoftDeleteUserAsync(id);
+            var result = await _userService.SoftDeleteUserAsync(id);
 
-            if (!deleted)
-                return NotFound(ApiResponse<object>.FailResponse("User not found or already deleted"));
+            if (!result.IsSuccess)
+                return result.ErrorCode switch
+                {
+                    ErrorCodes.UserNotFound
+                        => NotFound(ApiResponse<object>.FailResponse(result.ErrorCode)),
+                    _ => BadRequest(ApiResponse<object>.FailResponse(ErrorCodes.InternalServerError))
+                };
 
-            return Ok(ApiResponse<object>.SuccessResponse(new { Id = id }, "User deleted successfully"));
+            return Ok(ApiResponse<object>.SuccessResponse(new { data = new { id } }, result.SuccessCode));
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
+using TaskManagement.Application.Common;
 using TaskManagement.Application.DTOs.Auth;
+using TaskManagement.Application.DTOs.Users;
 using TaskManagement.Application.Interfaces.Repositories;
 using TaskManagement.Application.Interfaces.Services;
 using TaskManagement.Domain.Entities;
@@ -10,62 +12,79 @@ namespace TaskManagement.Application.Services
     public class AuthService : IAuthService
     {
         private readonly IMapper _mapper;
-        private readonly IJwtTokenService _tokenService;
         private readonly IUserRepository _repository;
+        private readonly IJwtTokenService _tokenService;
         private readonly IPasswordService _passwordService;
 
         public AuthService(IMapper mapper, IUserRepository repository, IPasswordService passwordService, IJwtTokenService tokenService)
         {
             _mapper = mapper;
             _repository = repository;
-            _passwordService = passwordService;
             _tokenService = tokenService;
+            _passwordService = passwordService;
         }
 
-        // Register a new user and return the registered user's details
-        public async Task<RegisterRequestDto> RegisterUserAsync(RegisterRequestDto dto)
+        //Register a new user
+        public async Task<Result<UserDto>> RegisterUserAsync(RegisterRequestDto dto)
         {
+            // Check if email already exists
+            if (await _repository.GetUserByEmailAsync(dto.Email) != null)
+                return Result<UserDto>.Fail(ErrorCodes.UserEmailAlreadyExists);
+
+            // Map DTO to domain entity
             var newUser = _mapper.Map<User>(dto);
 
+            // Set additional fields
             newUser.Role = UserRole.Admin;
             newUser.CreationMethod = UserCreationMethod.Registered;
             newUser.PasswordSalt = _passwordService.GenerateSalt();
             newUser.PasswordHash = _passwordService.HashPassword(dto.Password, newUser.PasswordSalt);
 
+            // Save user
             await _repository.CreateUserAsync(newUser);
 
-            return _mapper.Map<RegisterRequestDto>(newUser);
+            // Return success result
+            return Result<UserDto>.Success(_mapper.Map<UserDto>(newUser));
         }
 
         // Authenticate user and return login response with JWT token
-        public async Task<LoginResponseDto?> LoginUserAsync(LoginRequestDto dto)
+        public async Task<Result<LoginResponseDto>> LoginUserAsync(LoginRequestDto dto)
         {
+            // Find user by email
             var user = await _repository.GetUserByEmailAsync(dto.Email);
 
-            var loginUser = _mapper.Map<LoginResponseDto>(user);
-
+            // if user not found, return error
             if (user == null)
-                return null;
+                return Result<LoginResponseDto>.Fail(ErrorCodes.UserNotFound);
 
-            loginUser.Token = _tokenService.GenerateToken(_mapper.Map<UserClaimsDto>(loginUser));
+            var isValidCreds = _passwordService.VerifyPassword(dto.Password, user.PasswordSalt, user.PasswordHash);
 
-            return loginUser;
+            //If password does not match, return error
+            if (!isValidCreds)
+                return Result<LoginResponseDto>.Fail(ErrorCodes.InvalidCredentials);
+
+            var loggedInUser = _mapper.Map<LoginResponseDto>(user);
+
+            loggedInUser.Token = _tokenService.GenerateToken(_mapper.Map<UserClaimsDto>(loggedInUser));
+
+            // Return success result
+            return Result<LoginResponseDto>.Success(_mapper.Map<LoginResponseDto>(loggedInUser));
         }
 
         // Change user password
-        public Task<ChangePasswordDto> ChangePasswordAsync(ChangePasswordDto dto)
+        public Task<Result<ChangePasswordDto>> ChangePasswordAsync(ChangePasswordDto dto)
         {
             throw new NotImplementedException();
         }
 
         // Refresh JWT token
-        public Task<RefreshTokenRequestDto> RefreshTokenAsync(RefreshTokenRequestDto dto)
+        public Task<Result<RefreshTokenRequestDto>> RefreshTokenAsync(RefreshTokenRequestDto dto)
         {
             throw new NotImplementedException();
         }
 
         // Get user profile details
-        public Task<UserProfileDto> GetUserProfileAsync()
+        public Task<Result<UserProfileDto>> GetUserProfileAsync()
         {
             throw new NotImplementedException();
         }

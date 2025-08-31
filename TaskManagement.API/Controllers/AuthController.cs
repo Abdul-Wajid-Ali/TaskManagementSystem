@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TaskManagement.API.Responses;
+using TaskManagement.Application.Common;
 using TaskManagement.Application.DTOs.Auth;
 using TaskManagement.Application.Interfaces.Services;
 
@@ -9,31 +10,29 @@ namespace TaskManagement.API.Controllers
      /// </summary>
      ///
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     public class AuthController(IAuthService _authService) : ControllerBase
     {
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequestDto dto)
         {
-            if (dto == null || string.IsNullOrWhiteSpace(dto.Email))
-                return BadRequest(ApiResponse<Object>.FailResponse("Invalid User Data!"));
+            var result = await _authService.RegisterUserAsync(dto);
 
-            var userId = await _authService.RegisterUserAsync(dto);
-            return Ok(ApiResponse<Object>.SuccessResponse(new { userId }, "User Created Successfully."));
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponse<Object>.FailResponse(result.ErrorCode));
+
+            return Ok(ApiResponse<Object>.SuccessResponse(new { data = result.Data }));
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> login([FromBody] LoginRequestDto dto)
         {
-            if (dto == null || string.IsNullOrWhiteSpace(dto.Email))
-                return BadRequest(ApiResponse<Object>.FailResponse("Invalid User Data!"));
+            var result = await _authService.LoginUserAsync(dto);
 
-            var loggedInUser = await _authService.LoginUserAsync(dto);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponse<Object>.FailResponse(result.ErrorCode));
 
-            if (loggedInUser == null)
-                return BadRequest(ApiResponse<Object>.FailResponse("Invalid Credentials!"));
-
-            return Ok(ApiResponse<LoginResponseDto>.SuccessResponse(loggedInUser, "User Created Successfully."));
+            return Ok(ApiResponse<object>.SuccessResponse(new { data = result.Data }));
         }
     }
 }

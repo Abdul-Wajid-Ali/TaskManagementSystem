@@ -2,16 +2,20 @@
 {
     public class ApiResponse<T>
     {
-        public bool Success { get; set; }
+        public bool isSuccess { get; set; }
 
-        public string? Message { get; set; }
+        public string? errorCode { get; set; }
 
-        public T? Data { get; set; }
+        public string? successCode { get; set; }
 
-        public static ApiResponse<T> SuccessResponse(T data, string message = "") =>
-            new ApiResponse<T> { Success = true, Data = data, Message = message };
+        public T? data { get; set; }
 
-        public static ApiResponse<T> FailResponse(string message) =>
-            new ApiResponse<T> { Success = false, Data = default, Message = message };
+        public static ApiResponse<T> SuccessResponse(T data, string successCode = default!) =>
+            string.IsNullOrWhiteSpace(successCode) ?
+            new() { isSuccess = true, data = data } :
+            new() { isSuccess = true, data = data, successCode = successCode };
+
+        public static ApiResponse<T> FailResponse(string errorCode) =>
+            new() { isSuccess = false, data = default!, errorCode = errorCode };
     }
 }

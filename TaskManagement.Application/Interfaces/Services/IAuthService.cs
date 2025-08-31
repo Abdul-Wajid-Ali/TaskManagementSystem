@@ -1,17 +1,19 @@
-﻿using TaskManagement.Application.DTOs.Auth;
+﻿using TaskManagement.Application.Common;
+using TaskManagement.Application.DTOs.Auth;
+using TaskManagement.Application.DTOs.Users;
 
 namespace TaskManagement.Application.Interfaces.Services
 {
     public interface IAuthService
     {
-        Task<RegisterRequestDto> RegisterUserAsync(RegisterRequestDto dto);
+        Task<Result<UserDto>> RegisterUserAsync(RegisterRequestDto dto);
 
-        Task<LoginResponseDto?> LoginUserAsync(LoginRequestDto dto);
+        Task<Result<LoginResponseDto>> LoginUserAsync(LoginRequestDto dto);
 
-        Task<RefreshTokenRequestDto> RefreshTokenAsync(RefreshTokenRequestDto dto);
+        Task<Result<RefreshTokenRequestDto>> RefreshTokenAsync(RefreshTokenRequestDto dto);
 
-        Task<ChangePasswordDto> ChangePasswordAsync(ChangePasswordDto dto);
+        Task<Result<ChangePasswordDto>> ChangePasswordAsync(ChangePasswordDto dto);
 
-        Task<UserProfileDto> GetUserProfileAsync();
+        Task<Result<UserProfileDto>> GetUserProfileAsync();
     }
 }
