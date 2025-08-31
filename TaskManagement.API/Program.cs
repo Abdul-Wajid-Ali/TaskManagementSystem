@@ -7,18 +7,21 @@ builder.Services.AddApplicationServices(builder.Configuration);
 
 var app = builder.Build();
 
-// Expose OpenAPI docs in development only
+// 1. Exception handling first
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseDeveloperExceptionPage(); // catch unhandled exceptions
+    app.MapOpenApi();                // dev-only API docs
 }
 
-// Configure middleware
-app.UseHttpsRedirection();   // Redirect HTTP → HTTPS
-app.UseAuthentication();     // Validate JWTs
-app.UseAuthorization();      // Enforce [Authorize] policies
+// 2. Security & static handling
+app.UseHttpsRedirection();
 
-// Map controller routes
+// 3. AuthN & AuthZ
+app.UseAuthentication();
+app.UseAuthorization();
+
+// 4. Controllers / endpoints
 app.MapControllers();
 
 await app.RunAsync();
