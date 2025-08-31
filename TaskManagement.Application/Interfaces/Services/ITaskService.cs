@@ -1,19 +1,22 @@
-﻿using TaskManagement.Application.DTOs.Tasks;
+﻿using TaskManagement.Application.Common;
+using TaskManagement.Application.DTOs.Tasks;
 
 namespace TaskManagement.Application.Interfaces.Services
 {
     public interface ITaskService
     {
-        Task<long> CreateTaskAsync(CreateTaskDto dto);
+        Task<Result<long>> CreateTaskAsync(CreateTaskDto dto);
 
-        Task<TaskDto?> GetTaskByIdAsync(long id);
+        Task<Result<TaskDto>> GetTaskByIdAsync(long id);
 
-        Task<IEnumerable<TaskDto>?> GetUserTasks(long userId);
+        Task<Result<IEnumerable<TaskDto>>> GetAssignedTasksAsync(long userId);
 
-        Task<IEnumerable<TaskDto>?> GetAllTasksAsync();
+        Task<Result<IEnumerable<TaskDto>>> GetCreatedTasksAsync(long userId);
 
-        Task<bool> UpdateTaskAsync(long taskId, UpdateTaskDto dto);
+        Task<Result<TaskDto>> UpdateTaskAsync(long taskId, UpdateTaskDto dto);
 
-        Task<bool> SoftDeleteTaskAsync(long id);
+        Task<Result<TaskDto>> UpdateTaskStatusAsync(long taskId, UpdateTaskStatusDto dto);
+
+        Task<Result<bool>> SoftDeleteTaskAsync(long id);
     }
 }

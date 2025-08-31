@@ -21,6 +21,7 @@ namespace TaskManagement.Application.Services
             _passwordService = passwordService;
         }
 
+        // Create a new user
         public async Task<Result<long>> CreateUserAsync(CreateUserDto dto)
         {
             if (await _repository.GetUserByEmailAsync(dto.Email) != null)
@@ -38,14 +39,16 @@ namespace TaskManagement.Application.Services
             return Result<long>.Success(newUser.Id, SuccessCodes.UserCreatedSuccessfully);
         }
 
-        public async Task<Result<IEnumerable<UserDto>>> GetAllUsersAsync()
+        // Get all users created by specific user
+        public async Task<Result<IEnumerable<UserDto>>> GetCreatedUsersAsync(long id)
         {
-            var usersList = await _repository.GetAllUsersAsync()
+            var usersList = await _repository.GetCreatedUsersAsync(id)
                 .ContinueWith(item => _mapper.Map<IEnumerable<UserDto>>(item.Result));
 
             return Result<IEnumerable<UserDto>>.Success(usersList);
         }
 
+        // Get a user by Id
         public async Task<Result<UserDto>> GetUserByIdAsync(long id)
         {
             var user = await _repository.GetUserByIdAsync(id)
@@ -57,6 +60,7 @@ namespace TaskManagement.Application.Services
             return Result<UserDto>.Success(user);
         }
 
+        // Soft delete a user by setting DeletedOn timestamp
         public async Task<Result<bool>> SoftDeleteUserAsync(long id)
         {
             var existingUser = await _repository.GetUserByIdAsync(id);
@@ -69,6 +73,7 @@ namespace TaskManagement.Application.Services
             return Result<bool>.Success(await _repository.UpdateUserAsync(existingUser), SuccessCodes.UserDeletedSucessfully);
         }
 
+        // Update user details
         public async Task<Result<UserDto>> UpdateUserAsync(long userId, UpdateUserDto dto)
         {
             var existingUser = await _repository.GetUserByIdAsync(userId);

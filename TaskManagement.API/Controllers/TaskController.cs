@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TaskManagement.API.Extensions;
 using TaskManagement.API.Responses;
+using TaskManagement.Application.Common;
 using TaskManagement.Application.DTOs.Tasks;
 using TaskManagement.Application.Interfaces.Services;
 
@@ -10,7 +11,7 @@ namespace TaskManagement.API.Controllers
      /// Controller for managing tasks.
      /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/task")]
     public class TaskController(ITaskService _taskService) : ControllerBase
     {
         /// <summary>
@@ -24,11 +25,9 @@ namespace TaskManagement.API.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 400)]
         public async Task<IActionResult> CreateTask([FromBody] CreateTaskDto dto)
         {
-            if (dto == null || string.IsNullOrWhiteSpace(dto.Title))
-                return BadRequest(ApiResponse<Object>.FailResponse("Invalid Task Data!"));
+            var result = await _taskService.CreateTaskAsync(dto);
 
-            var taskId = await _taskService.CreateTaskAsync(dto);
-            return Ok(ApiResponse<long>.SuccessResponse(taskId, "Task Created Successfully."));
+            return Ok(ApiResponse<object>.SuccessResponse(new { data = new { id = result.Data } }, result.SuccessCode));
         }
 
         /// <summary>
@@ -36,56 +35,54 @@ namespace TaskManagement.API.Controllers
         /// </summary>
         /// <param name="id">Task Id.</param>
         /// <returns>Task details.</returns>
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id:long}")]
         [ProducesResponseType(typeof(ApiResponse<TaskDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
         public async Task<IActionResult> GetTask(long id)
         {
-            var task = await _taskService.GetTaskByIdAsync(id);
+            var result = await _taskService.GetTaskByIdAsync(id);
 
-            if (task == null)
-                return NotFound(ApiResponse<object>.FailResponse("Task not found"));
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponse<Object>.FailResponse(result.ErrorCode));
 
-            return Ok(ApiResponse<TaskDto>.SuccessResponse(task));
+            return Ok(ApiResponse<Object>.SuccessResponse(new { data = result.Data }));
         }
 
         /// <summary>
-        /// Retrieves a task for logged-in user.
+        /// Retrieves all tasks for createdby logged in user.
         /// </summary>
-        /// <param name="id">Task Id.</param>
-        /// <returns>Task details.</returns>
-        [HttpGet]
+        /// <returns>Tasks List.</returns>
+        [HttpGet("created")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(ApiResponse<TaskDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
-        public async Task<IActionResult> GetMyTasks()
+        public async Task<IActionResult> GetAllCreatedTasks()
         {
+            // Get the current logged-in user's Id from the JWT token claims
             var userId = User.GetCurrentUserId();
 
-            if (userId == null)
-                return BadRequest(ApiResponse<object>.FailResponse("Invalid User Id"));
+            var result = await _taskService.GetCreatedTasksAsync((long)userId);
 
-            var task = await _taskService.GetTaskByIdAsync((long)userId);
-
-            if (task == null)
-                return NotFound(ApiResponse<object>.FailResponse("Task not found"));
-
-            return Ok(ApiResponse<TaskDto>.SuccessResponse(task));
+            return Ok(ApiResponse<Object>.SuccessResponse(new { data = result.Data }));
         }
 
         /// <summary>
-        /// Retrieves all tasks.
+        /// Retrieves all tasks assigned to logged-in user.
         /// </summary>
-        /// <returns>List of tasks.</returns>
-        [HttpGet("all")]
-        [ProducesResponseType(typeof(ApiResponse<IEnumerable<TaskDto>>), 200)]
-        public async Task<IActionResult> GetAllTasks()
+        /// <returns>Tasks List.</returns>
+        [HttpGet("assigned")]
+        [Authorize(Roles = "Employee")]
+        [ProducesResponseType(typeof(ApiResponse<TaskDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 404)]
+        public async Task<IActionResult> GetAllAssignedTasks()
         {
-            var tasks = await _taskService.GetAllTasksAsync();
+            // Get the current logged-in user's Id from the JWT token claims
+            var userId = User.GetCurrentUserId();
 
-            if (tasks == null || !tasks.Any())
-                return Ok(ApiResponse<IEnumerable<TaskDto>>.SuccessResponse([], "No tasks found"));
+            var result = await _taskService.GetAssignedTasksAsync((long)userId);
 
-            return Ok(ApiResponse<IEnumerable<TaskDto>>.SuccessResponse(tasks));
+            return Ok(ApiResponse<Object>.SuccessResponse(new { data = result.Data }));
         }
 
         /// <summary>
@@ -94,21 +91,58 @@ namespace TaskManagement.API.Controllers
         /// <param name="id">Task Id.</param>
         /// <param name="dto">Task data for update.</param>
         /// <returns>Status of the update.</returns>
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id:long}/update")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 400)]
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
         public async Task<IActionResult> UpdateTask(long id, [FromBody] UpdateTaskDto dto)
         {
-            if (dto == null)
-                return BadRequest(ApiResponse<object>.FailResponse("Invalid task data"));
+            var result = await _taskService.UpdateTaskAsync(id, dto);
 
-            var updated = await _taskService.UpdateTaskAsync(id, dto);
+            if (!result.IsSuccess)
+                return result.ErrorCode switch
+                {
+                    ErrorCodes.TaskNotFound
+                        => NotFound(ApiResponse<object>.FailResponse(result.ErrorCode)),
 
-            if (!updated)
-                return NotFound(ApiResponse<object>.FailResponse("Task not found or already deleted"));
+                    ErrorCodes.UserEmailAlreadyExists
+                        => Conflict(ApiResponse<object>.FailResponse(result.ErrorCode)),
 
-            return Ok(ApiResponse<object>.SuccessResponse(new { Id = id }, "Task updated successfully"));
+                    _ => BadRequest(ApiResponse<object>.FailResponse(ErrorCodes.InternalServerError))
+                };
+
+            return Ok(ApiResponse<object>.SuccessResponse(new { data = result.Data }));
+        }
+
+        /// <summary>
+        /// Updates an existing task's status.
+        /// </summary>
+        /// <param name="id">Task Id.</param>
+        /// <param name="dto">Task data for update.</param>
+        /// <returns>Status of the update.</returns>
+        [Authorize(Roles = "Employee")]
+        [HttpPut("{id:long}/update/status")]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 400)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 404)]
+        public async Task<IActionResult> UpdateTaskStatus(long id, [FromBody] UpdateTaskStatusDto dto)
+        {
+            var result = await _taskService.UpdateTaskStatusAsync(id, dto);
+
+            if (!result.IsSuccess)
+                return result.ErrorCode switch
+                {
+                    ErrorCodes.TaskNotFound
+                        => NotFound(ApiResponse<object>.FailResponse(result.ErrorCode)),
+
+                    ErrorCodes.UserEmailAlreadyExists
+                        => Conflict(ApiResponse<object>.FailResponse(result.ErrorCode)),
+
+                    _ => BadRequest(ApiResponse<object>.FailResponse(ErrorCodes.InternalServerError))
+                };
+
+            return Ok(ApiResponse<object>.SuccessResponse(new { data = result.Data }));
         }
 
         /// <summary>
@@ -116,17 +150,23 @@ namespace TaskManagement.API.Controllers
         /// </summary>
         /// <param name="id">Task Id.</param>
         /// <returns>Status of deletion.</returns>
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:long}/delete")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
         public async Task<IActionResult> DeleteTask(long id)
         {
-            var deleted = await _taskService.SoftDeleteTaskAsync(id);
+            var result = await _taskService.SoftDeleteTaskAsync(id);
 
-            if (!deleted)
-                return NotFound(ApiResponse<object>.FailResponse("Task not found or already deleted"));
+            if (!result.IsSuccess)
+                return result.ErrorCode switch
+                {
+                    ErrorCodes.UserNotFound
+                        => NotFound(ApiResponse<object>.FailResponse(result.ErrorCode)),
+                    _ => BadRequest(ApiResponse<object>.FailResponse(ErrorCodes.InternalServerError))
+                };
 
-            return Ok(ApiResponse<object>.SuccessResponse(new { Id = id }, "Task deleted successfully"));
+            return Ok(ApiResponse<object>.SuccessResponse(new { data = new { id } }, result.SuccessCode));
         }
     }
 }

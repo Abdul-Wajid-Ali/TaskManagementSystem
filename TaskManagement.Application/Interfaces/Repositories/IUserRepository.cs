@@ -10,7 +10,7 @@ namespace TaskManagement.Application.Interfaces.Repositories
 
         Task<User?> GetUserByEmailAsync(string email);
 
-        Task<IEnumerable<User>?> GetAllUsersAsync();
+        Task<IEnumerable<User>> GetCreatedUsersAsync(long id);
 
         Task<bool> UpdateUserAsync(User user);
     }

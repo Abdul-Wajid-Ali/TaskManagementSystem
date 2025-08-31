@@ -9,9 +9,9 @@ namespace TaskManagement.Application.Interfaces.Repositories
 
         Task<Task?> GetTaskByIdAsync(long id);
 
-        Task<IEnumerable<UserTask>?> GetUserTasks(long userId);
+        Task<IEnumerable<UserTask>> GetAssignedTasksAsync(long userId);
 
-        Task<IEnumerable<Task>?> GetAllTasksAsync();
+        Task<IEnumerable<Task>> GetCreatedTasksAsync(long userId);
 
         Task<bool> UpdateTaskAsync(Task task);
 

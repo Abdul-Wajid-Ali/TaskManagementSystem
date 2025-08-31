@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TaskManagement.API.Extensions;
 using TaskManagement.API.Responses;
 using TaskManagement.Application.Common;
 using TaskManagement.Application.DTOs.Users;
@@ -58,7 +59,9 @@ namespace TaskManagement.API.Controllers
         [ProducesResponseType(typeof(ApiResponse<IEnumerable<UserDto>>), 200)]
         public async Task<IActionResult> GetAllUsers()
         {
-            var result = await _userService.GetAllUsersAsync();
+            var userId = User.GetCurrentUserId();
+
+            var result = await _userService.GetCreatedUsersAsync((long)userId);
 
             return Ok(ApiResponse<Object>.SuccessResponse(new { data = result.Data }));
         }
@@ -89,7 +92,7 @@ namespace TaskManagement.API.Controllers
                     _ => BadRequest(ApiResponse<object>.FailResponse(ErrorCodes.InternalServerError))
                 };
 
-            return Ok(ApiResponse<object>.SuccessResponse(new { data = result.Data }, SuccessCodes.UserUpdatedSuccessfully));
+            return Ok(ApiResponse<object>.SuccessResponse(new { data = result.Data }));
         }
 
         /// <summary>

@@ -1,5 +1,4 @@
-﻿using Scalar.AspNetCore;
-using TaskManagement.API.Extensions;
+﻿using TaskManagement.API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +11,6 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.MapScalarApiReference();
 }
 
 // Configure middleware

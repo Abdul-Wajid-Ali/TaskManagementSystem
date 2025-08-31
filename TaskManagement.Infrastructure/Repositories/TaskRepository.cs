@@ -6,30 +6,14 @@ using Task = TaskManagement.Domain.Entities.Task;
 
 namespace TaskManagement.Infrastructure.Repositories
 {
-    public class TaskRepository : ITaskRepository
+    public class TaskRepository(AppDbContext _dbContext) : ITaskRepository
     {
-        private readonly AppDbContext _dbContext;
-
-        public TaskRepository(AppDbContext dbContext)
-        {
-            _dbContext = dbContext;
-        }
-
         // Create a new Task and return its Id
         public async Task<long> CreateTaskAsync(Task task)
         {
             await _dbContext.Tasks.AddAsync(task);
             await _dbContext.SaveChangesAsync();
             return task.Id;
-        }
-
-        // Get all tasks filter out deleted ones
-        public async Task<IEnumerable<Task>?> GetAllTasksAsync()
-        {
-            return await _dbContext.Tasks.AsNoTracking()
-                .Include(t => t.UserTasks)
-                .Where(t => t.DeletedOn == null)
-                .ToListAsync();
         }
 
         // Get a task by Id only which are not deleted
@@ -42,12 +26,20 @@ namespace TaskManagement.Infrastructure.Repositories
         }
 
         // Get tasks assigned to a specific user
-        public async Task<IEnumerable<UserTask>?> GetUserTasks(long userId)
+        public async Task<IEnumerable<UserTask>> GetAssignedTasksAsync(long userId)
         {
             return await _dbContext.UsersTasks.AsNoTracking()
                 .Where(item => item.UserId == userId)
                 .Include(item => item.Task)
                 .Where(item => item.Task.DeletedOn == null).ToListAsync();
+        }
+
+        // Get tasks created by a specific user
+        public async Task<IEnumerable<Task>> GetCreatedTasksAsync(long userId)
+        {
+            return await _dbContext.Tasks.AsNoTracking()
+                .Where(item => item.DeletedOn == null && item.CreatedByUserId == userId)
+                .ToListAsync();
         }
 
         // Update an existing task
