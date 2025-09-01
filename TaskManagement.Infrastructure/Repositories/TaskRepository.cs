@@ -26,12 +26,14 @@ namespace TaskManagement.Infrastructure.Repositories
         }
 
         // Get tasks assigned to a specific user
-        public async Task<IEnumerable<UserTask>> GetAssignedTasksAsync(long userId)
+        public async Task<IEnumerable<Task>> GetAssignedTasksAsync(long userId)
         {
             return await _dbContext.UsersTasks.AsNoTracking()
                 .Where(item => item.UserId == userId)
                 .Include(item => item.Task)
-                .Where(item => item.Task.DeletedOn == null).ToListAsync();
+                .Where(item => item.Task.DeletedOn == null)
+                .Select(item => item.Task)
+                .ToListAsync();
         }
 
         // Get tasks created by a specific user

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using TaskManagement.Application.DTOs.Tasks;
+using TaskManagement.Domain.Entities;
 using Task = TaskManagement.Domain.Entities.Task;
 
 namespace TaskManagement.Application.Mapping
@@ -17,6 +18,9 @@ namespace TaskManagement.Application.Mapping
 
             // UpdateTaskDto -> Entity
             CreateMap<UpdateTaskDto, Task>();
+
+            // Entity -> DTO
+            CreateMap<UserTask, TaskDto>();
         }
     }
 }

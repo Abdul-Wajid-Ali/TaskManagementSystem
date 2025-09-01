@@ -1,5 +1,4 @@
-﻿using TaskManagement.Domain.Entities;
-using Task = TaskManagement.Domain.Entities.Task;
+﻿using Task = TaskManagement.Domain.Entities.Task;
 
 namespace TaskManagement.Application.Interfaces.Repositories
 {
@@ -9,7 +8,7 @@ namespace TaskManagement.Application.Interfaces.Repositories
 
         Task<Task?> GetTaskByIdAsync(long id);
 
-        Task<IEnumerable<UserTask>> GetAssignedTasksAsync(long userId);
+        Task<IEnumerable<Task>> GetAssignedTasksAsync(long userId);
 
         Task<IEnumerable<Task>> GetCreatedTasksAsync(long userId);
 

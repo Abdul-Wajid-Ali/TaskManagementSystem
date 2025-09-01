@@ -2,8 +2,8 @@
 {
     public enum TaskProgress
     {
-        Pending = 0,
-        InProgress = 1,
-        Done = 2
+        Pending = 1,
+        InProgress = 2,
+        Done = 3
     }
 }

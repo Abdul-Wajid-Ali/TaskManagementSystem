@@ -142,8 +142,8 @@ namespace TaskManagement.API.Controllers
                     ErrorCodes.TaskNotFound
                         => NotFound(ApiResponse<object>.FailResponse(result.ErrorCode)),
 
-                    ErrorCodes.UserEmailAlreadyExists
-                        => Conflict(ApiResponse<object>.FailResponse(result.ErrorCode)),
+                    ErrorCodes.InvalidTaskStatus
+                        => BadRequest(ApiResponse<object>.FailResponse(result.ErrorCode)),
 
                     _ => BadRequest(ApiResponse<object>.FailResponse(ErrorCodes.InternalServerError))
                 };
@@ -168,7 +168,7 @@ namespace TaskManagement.API.Controllers
             if (!result.IsSuccess)
                 return result.ErrorCode switch
                 {
-                    ErrorCodes.UserNotFound
+                    ErrorCodes.TaskNotFound
                         => NotFound(ApiResponse<object>.FailResponse(result.ErrorCode)),
                     _ => BadRequest(ApiResponse<object>.FailResponse(ErrorCodes.InternalServerError))
                 };

@@ -3,6 +3,7 @@ using TaskManagement.Application.Common;
 using TaskManagement.Application.DTOs.Tasks;
 using TaskManagement.Application.Interfaces.Repositories;
 using TaskManagement.Application.Interfaces.Services;
+using TaskManagement.Domain.Enums;
 using Task = TaskManagement.Domain.Entities.Task;
 
 namespace TaskManagement.Application.Services
@@ -112,7 +113,7 @@ namespace TaskManagement.Application.Services
             if (!isTaskAssigned)
                 return Result<TaskDto>.Fail(ErrorCodes.TaskNotFound);
 
-            if (Enum.IsDefined(typeof(TaskStatus), dto.Status))
+            if (!Enum.IsDefined(typeof(TaskProgress), dto.Status))
                 return Result<TaskDto>.Fail(ErrorCodes.InvalidTaskStatus);
 
             // Update only status field
