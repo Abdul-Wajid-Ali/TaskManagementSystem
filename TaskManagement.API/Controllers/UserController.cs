@@ -25,7 +25,7 @@ namespace TaskManagement.API.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 400)]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
         {
-            var currentUserId = User.GetCurrentUserId();    
+            var currentUserId = User.GetCurrentUserId();
             var result = await _userService.CreateUserAsync(dto, (long)currentUserId!);
 
             if (!result.IsSuccess)
@@ -79,7 +79,9 @@ namespace TaskManagement.API.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
         public async Task<IActionResult> UpdateUser(long id, [FromBody] UpdateUserDto dto)
         {
-            var result = await _userService.UpdateUserAsync(id, dto);
+            var userId = User.GetCurrentUserId();
+
+            var result = await _userService.UpdateUserAsync(id, dto, (long)userId!);
 
             if (!result.IsSuccess)
                 return result.ErrorCode switch
@@ -106,7 +108,8 @@ namespace TaskManagement.API.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
         public async Task<IActionResult> DeleteUser(long id)
         {
-            var result = await _userService.SoftDeleteUserAsync(id);
+            var userId = User.GetCurrentUserId();
+            var result = await _userService.SoftDeleteUserAsync(id, (long)userId!);
 
             if (!result.IsSuccess)
                 return result.ErrorCode switch

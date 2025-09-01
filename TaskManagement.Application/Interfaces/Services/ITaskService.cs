@@ -17,6 +17,6 @@ namespace TaskManagement.Application.Interfaces.Services
 
         Task<Result<TaskDto>> UpdateTaskStatusAsync(long taskId, UpdateTaskStatusDto dto, long userId);
 
-        Task<Result<bool>> SoftDeleteTaskAsync(long id);
+        Task<Result<bool>> SoftDeleteTaskAsync(long id, long userId);
     }
 }

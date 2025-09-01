@@ -125,7 +125,7 @@ namespace TaskManagement.Application.Services
         }
 
         // Soft delete a task
-        public async Task<Result<bool>> SoftDeleteTaskAsync(long id)
+        public async Task<Result<bool>> SoftDeleteTaskAsync(long id, long userId)
         {
             var existingTask = await _repository.GetTaskByIdAsync(id);
 
@@ -133,7 +133,7 @@ namespace TaskManagement.Application.Services
             if (existingTask == null)
                 return Result<bool>.Fail(ErrorCodes.TaskNotFound);
 
-            var isTaskCreated = await _repository.IsCreatedTask(id, existingTask.CreatedByUserId);
+            var isTaskCreated = await _repository.IsCreatedTask(id, userId);
 
             // If task is not created by the user, return false
             if (!isTaskCreated)

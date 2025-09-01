@@ -162,7 +162,8 @@ namespace TaskManagement.API.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
         public async Task<IActionResult> DeleteTask(long id)
         {
-            var result = await _taskService.SoftDeleteTaskAsync(id);
+            var userId = User.GetCurrentUserId();
+            var result = await _taskService.SoftDeleteTaskAsync(id, (long)userId!);
 
             if (!result.IsSuccess)
                 return result.ErrorCode switch

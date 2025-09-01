@@ -62,11 +62,18 @@ namespace TaskManagement.Application.Services
         }
 
         // Soft delete a user by setting DeletedOn timestamp
-        public async Task<Result<bool>> SoftDeleteUserAsync(long id)
+        public async Task<Result<bool>> SoftDeleteUserAsync(long id, long currentUserId)
         {
             var existingUser = await _repository.GetUserByIdAsync(id);
 
+            // Check if user exists
             if (existingUser == null)
+                return Result<bool>.Fail(ErrorCodes.UserNotFound);
+
+            var IsUserCreated = await _repository.IsCreatedUser(id, currentUserId);
+
+            // Check if user is created by current user
+            if (!IsUserCreated)
                 return Result<bool>.Fail(ErrorCodes.UserNotFound);
 
             existingUser.DeletedOn = DateTime.UtcNow;
@@ -75,12 +82,18 @@ namespace TaskManagement.Application.Services
         }
 
         // Update user details
-        public async Task<Result<UserDto>> UpdateUserAsync(long userId, UpdateUserDto dto)
+        public async Task<Result<UserDto>> UpdateUserAsync(long userId, UpdateUserDto dto, long currentUserId)
         {
             var existingUser = await _repository.GetUserByIdAsync(userId);
 
             // Check if user exists
             if (existingUser == null)
+                return Result<UserDto>.Fail(ErrorCodes.UserNotFound);
+
+            var IsUserCreated = await _repository.IsCreatedUser(userId, currentUserId);
+
+            // Check if user is created by current user
+            if (!IsUserCreated)
                 return Result<UserDto>.Fail(ErrorCodes.UserNotFound);
 
             // Check for email uniqueness if email is being updated
