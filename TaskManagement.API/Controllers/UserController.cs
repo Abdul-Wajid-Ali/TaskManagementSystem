@@ -25,12 +25,13 @@ namespace TaskManagement.API.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 400)]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
         {
-            var result = await _userService.CreateUserAsync(dto);
+            var currentUserId = User.GetCurrentUserId();    
+            var result = await _userService.CreateUserAsync(dto, (long)currentUserId!);
 
             if (!result.IsSuccess)
                 return BadRequest(ApiResponse<Object>.FailResponse(result.ErrorCode));
 
-            return Ok(ApiResponse<object>.SuccessResponse(new { data = new { id = result.Data } }, result.SuccessCode));
+            return Ok(ApiResponse<object>.SuccessResponse(new { id = result.Data }, result.SuccessCode!));
         }
 
         /// <summary>
@@ -48,22 +49,22 @@ namespace TaskManagement.API.Controllers
             if (!result.IsSuccess)
                 return BadRequest(ApiResponse<Object>.FailResponse(result.ErrorCode));
 
-            return Ok(ApiResponse<Object>.SuccessResponse(new { data = result.Data }));
+            return Ok(ApiResponse<Object>.SuccessResponse(result.Data!));
         }
 
         /// <summary>
-        /// Retrieves all Users.
+        /// Retrieves all Users created by loggedIn Admin.
         /// </summary>
         /// <returns>List of users.</returns>
-        [HttpGet("all")]
+        [HttpGet("created")]
         [ProducesResponseType(typeof(ApiResponse<IEnumerable<UserDto>>), 200)]
         public async Task<IActionResult> GetAllUsers()
         {
             var userId = User.GetCurrentUserId();
 
-            var result = await _userService.GetCreatedUsersAsync((long)userId);
+            var result = await _userService.GetCreatedUsersAsync((long)userId!);
 
-            return Ok(ApiResponse<Object>.SuccessResponse(new { data = result.Data }));
+            return Ok(ApiResponse<Object>.SuccessResponse(result.Data!));
         }
 
         /// <summary>
@@ -92,7 +93,7 @@ namespace TaskManagement.API.Controllers
                     _ => BadRequest(ApiResponse<object>.FailResponse(ErrorCodes.InternalServerError))
                 };
 
-            return Ok(ApiResponse<object>.SuccessResponse(new { data = result.Data }));
+            return Ok(ApiResponse<object>.SuccessResponse(result.Data!));
         }
 
         /// <summary>
@@ -115,7 +116,7 @@ namespace TaskManagement.API.Controllers
                     _ => BadRequest(ApiResponse<object>.FailResponse(ErrorCodes.InternalServerError))
                 };
 
-            return Ok(ApiResponse<object>.SuccessResponse(new { data = new { id } }, result.SuccessCode));
+            return Ok(ApiResponse<object>.SuccessResponse(new { id }, result.SuccessCode!));
         }
     }
 }

@@ -16,5 +16,9 @@ namespace TaskManagement.Application.Interfaces.Repositories
         Task<bool> UpdateTaskAsync(Task task);
 
         Task<bool> AssignUsersToTaskAsync(Task task, List<long> userIds);
+
+        Task<bool> IsCreatedTask(long taskId, long userId);
+
+        Task<bool> IsAssignedTask(long taskId, long userId);
     }
 }

@@ -46,5 +46,12 @@ namespace TaskManagement.Infrastructure.Repositories
             await _dbContext.SaveChangesAsync();
             return true;
         }
+
+        // Check if a user is created by the current user and not soft-deleted
+        public Task<bool> IsCreatedUser(long userId, long currentUserId)
+        {
+            return _dbContext.Users.AsNoTracking()
+                .AnyAsync(item => item.Id == userId && item.CreatedByUserId == currentUserId && item.DeletedOn == null);
+        }
     }
 }

@@ -19,9 +19,12 @@ namespace TaskManagement.Application.Services
         }
 
         // Create a new task
-        public async Task<Result<long>> CreateTaskAsync(CreateTaskDto dto)
+        public async Task<Result<long>> CreateTaskAsync(CreateTaskDto dto, long id)
         {
             var newTask = _mapper.Map<Task>(dto);
+
+            newTask.CreatedByUserId = id;
+            newTask.CreatedOn = DateTime.UtcNow;
 
             // If multiple users are assigned, handle the assignment
             if (dto.AssignedUserIds != null && dto.AssignedUserIds.Count > 1)
@@ -35,13 +38,14 @@ namespace TaskManagement.Application.Services
         // Get a task by Id
         public async Task<Result<TaskDto>> GetTaskByIdAsync(long id)
         {
-            var task = await _repository.GetTaskByIdAsync(id)
-                .ContinueWith(item => _mapper.Map<TaskDto?>(item.Result));
+            var task = await _repository.GetTaskByIdAsync(id);
+
+            var temp = _mapper.Map<TaskDto>(task);
 
             if (task == null)
                 return Result<TaskDto>.Fail(ErrorCodes.TaskNotFound);
 
-            return Result<TaskDto>.Success(task);
+            return Result<TaskDto>.Success(temp!);
         }
 
         // Get all tasks assigned to a user
@@ -63,12 +67,18 @@ namespace TaskManagement.Application.Services
         }
 
         // Update an existing task
-        public async Task<Result<TaskDto>> UpdateTaskAsync(long taskId, UpdateTaskDto dto)
+        public async Task<Result<TaskDto>> UpdateTaskAsync(long taskId, UpdateTaskDto dto, long userId)
         {
             var existingTask = await _repository.GetTaskByIdAsync(taskId);
 
             // If task doesn't exist or deleted, return error
             if (existingTask == null)
+                return Result<TaskDto>.Fail(ErrorCodes.TaskNotFound);
+
+            var isTaskCreated = await _repository.IsCreatedTask(taskId, userId);
+
+            // If task is not created by the user, return error
+            if (!isTaskCreated)
                 return Result<TaskDto>.Fail(ErrorCodes.TaskNotFound);
 
             // If multiple users are assigned, handle the assignment
@@ -88,13 +98,22 @@ namespace TaskManagement.Application.Services
         }
 
         // Update only the status of a task
-        public async Task<Result<TaskDto>> UpdateTaskStatusAsync(long taskId, UpdateTaskStatusDto dto)
+        public async Task<Result<TaskDto>> UpdateTaskStatusAsync(long taskId, UpdateTaskStatusDto dto, long userId)
         {
             var existingTask = await _repository.GetTaskByIdAsync(taskId);
 
             // If task doesn't exist or deleted, return error
             if (existingTask == null)
                 return Result<TaskDto>.Fail(ErrorCodes.TaskNotFound);
+
+            var isTaskAssigned = await _repository.IsAssignedTask(taskId, userId);
+
+            // If task is not assigned to the user, return error
+            if (!isTaskAssigned)
+                return Result<TaskDto>.Fail(ErrorCodes.TaskNotFound);
+
+            if (Enum.IsDefined(typeof(TaskStatus), dto.Status))
+                return Result<TaskDto>.Fail(ErrorCodes.InvalidTaskStatus);
 
             // Update only status field
             existingTask.Status = dto.Status;
@@ -112,6 +131,12 @@ namespace TaskManagement.Application.Services
 
             // If task doesn't exist, return false
             if (existingTask == null)
+                return Result<bool>.Fail(ErrorCodes.TaskNotFound);
+
+            var isTaskCreated = await _repository.IsCreatedTask(id, existingTask.CreatedByUserId);
+
+            // If task is not created by the user, return false
+            if (!isTaskCreated)
                 return Result<bool>.Fail(ErrorCodes.TaskNotFound);
 
             existingTask.DeletedOn = DateTime.UtcNow;

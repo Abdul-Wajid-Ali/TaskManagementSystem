@@ -5,7 +5,7 @@ namespace TaskManagement.Application.Interfaces.Services
 {
     public interface IUserService
     {
-        Task<Result<long>> CreateUserAsync(CreateUserDto dto);
+        Task<Result<long>> CreateUserAsync(CreateUserDto dto, long Id);
 
         Task<Result<UserDto>> GetUserByIdAsync(long id);
 

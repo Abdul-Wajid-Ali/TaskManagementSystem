@@ -10,7 +10,7 @@ namespace TaskManagement.Application.Mapping
         {
             // Entity -> DTO
             CreateMap<Task, TaskDto>()
-                .ForMember(dest => dest.AssignedUserIds,opt => opt.MapFrom(src => src.UserTasks.Select(ut => ut.UserId).ToList()));
+                .ForMember(dest => dest.AssignedUserIds, opt => opt.MapFrom(src => src.UserTasks.Select(ut => ut.UserId).ToList()));
 
             // CreateTaskDto -> Entity
             CreateMap<CreateTaskDto, Task>();

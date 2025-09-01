@@ -14,7 +14,5 @@ namespace TaskManagement.Application.DTOs.Auth
 
         [MaxLength(1000)]
         public string Password { get; set; } = default!;
-
-        public UserRole Role { get; set; } = default!;
     }
 }

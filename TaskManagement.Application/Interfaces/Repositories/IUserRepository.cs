@@ -13,5 +13,7 @@ namespace TaskManagement.Application.Interfaces.Repositories
         Task<IEnumerable<User>> GetCreatedUsersAsync(long id);
 
         Task<bool> UpdateUserAsync(User user);
+
+        Task<bool> IsCreatedUser(long userId, long currentUserId);
     }
 }

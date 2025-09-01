@@ -5,7 +5,7 @@ namespace TaskManagement.Application.Interfaces.Services
 {
     public interface ITaskService
     {
-        Task<Result<long>> CreateTaskAsync(CreateTaskDto dto);
+        Task<Result<long>> CreateTaskAsync(CreateTaskDto dto, long id);
 
         Task<Result<TaskDto>> GetTaskByIdAsync(long id);
 
@@ -13,9 +13,9 @@ namespace TaskManagement.Application.Interfaces.Services
 
         Task<Result<IEnumerable<TaskDto>>> GetCreatedTasksAsync(long userId);
 
-        Task<Result<TaskDto>> UpdateTaskAsync(long taskId, UpdateTaskDto dto);
+        Task<Result<TaskDto>> UpdateTaskAsync(long taskId, UpdateTaskDto dto, long userId);
 
-        Task<Result<TaskDto>> UpdateTaskStatusAsync(long taskId, UpdateTaskStatusDto dto);
+        Task<Result<TaskDto>> UpdateTaskStatusAsync(long taskId, UpdateTaskStatusDto dto, long userId);
 
         Task<Result<bool>> SoftDeleteTaskAsync(long id);
     }

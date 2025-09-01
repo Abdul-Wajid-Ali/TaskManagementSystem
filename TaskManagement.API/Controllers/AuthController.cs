@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TaskManagement.API.Responses;
-using TaskManagement.Application.Common;
 using TaskManagement.Application.DTOs.Auth;
 using TaskManagement.Application.Interfaces.Services;
 
@@ -21,7 +20,7 @@ namespace TaskManagement.API.Controllers
             if (!result.IsSuccess)
                 return BadRequest(ApiResponse<Object>.FailResponse(result.ErrorCode));
 
-            return Ok(ApiResponse<Object>.SuccessResponse(new { data = result.Data }));
+            return Ok(ApiResponse<Object>.SuccessResponse(result.Data!));
         }
 
         [HttpPost("login")]
@@ -32,7 +31,7 @@ namespace TaskManagement.API.Controllers
             if (!result.IsSuccess)
                 return BadRequest(ApiResponse<Object>.FailResponse(result.ErrorCode));
 
-            return Ok(ApiResponse<object>.SuccessResponse(new { data = result.Data }));
+            return Ok(ApiResponse<object>.SuccessResponse(result.Data!));
         }
     }
 }

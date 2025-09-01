@@ -18,7 +18,7 @@ namespace TaskManagement.Application.DTOs.Tasks
 
         public List<long>? AssignedUserIds { get; init; } = new();
 
-        public DateTime DueDate { get; init; } = default!;
+        public DateOnly DueDate { get; set; } = default!;
 
         public DateTime? CompletedOn { get; init; } = default!;
 

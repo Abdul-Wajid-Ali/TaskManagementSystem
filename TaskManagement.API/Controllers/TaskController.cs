@@ -25,9 +25,12 @@ namespace TaskManagement.API.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 400)]
         public async Task<IActionResult> CreateTask([FromBody] CreateTaskDto dto)
         {
-            var result = await _taskService.CreateTaskAsync(dto);
+            // Get the current logged-in user's Id from the JWT token claims
+            var userId = User.GetCurrentUserId();
 
-            return Ok(ApiResponse<object>.SuccessResponse(new { data = new { id = result.Data } }, result.SuccessCode));
+            var result = await _taskService.CreateTaskAsync(dto, (long)userId!);
+
+            return Ok(ApiResponse<object>.SuccessResponse(new { id = result.Data }, result.SuccessCode!));
         }
 
         /// <summary>
@@ -46,7 +49,7 @@ namespace TaskManagement.API.Controllers
             if (!result.IsSuccess)
                 return BadRequest(ApiResponse<Object>.FailResponse(result.ErrorCode));
 
-            return Ok(ApiResponse<Object>.SuccessResponse(new { data = result.Data }));
+            return Ok(ApiResponse<Object>.SuccessResponse(result.Data!));
         }
 
         /// <summary>
@@ -62,9 +65,9 @@ namespace TaskManagement.API.Controllers
             // Get the current logged-in user's Id from the JWT token claims
             var userId = User.GetCurrentUserId();
 
-            var result = await _taskService.GetCreatedTasksAsync((long)userId);
+            var result = await _taskService.GetCreatedTasksAsync((long)userId!);
 
-            return Ok(ApiResponse<Object>.SuccessResponse(new { data = result.Data }));
+            return Ok(ApiResponse<Object>.SuccessResponse(result.Data!));
         }
 
         /// <summary>
@@ -80,9 +83,9 @@ namespace TaskManagement.API.Controllers
             // Get the current logged-in user's Id from the JWT token claims
             var userId = User.GetCurrentUserId();
 
-            var result = await _taskService.GetAssignedTasksAsync((long)userId);
+            var result = await _taskService.GetAssignedTasksAsync((long)userId!);
 
-            return Ok(ApiResponse<Object>.SuccessResponse(new { data = result.Data }));
+            return Ok(ApiResponse<Object>.SuccessResponse(result.Data!));
         }
 
         /// <summary>
@@ -98,7 +101,9 @@ namespace TaskManagement.API.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
         public async Task<IActionResult> UpdateTask(long id, [FromBody] UpdateTaskDto dto)
         {
-            var result = await _taskService.UpdateTaskAsync(id, dto);
+            var userId = User.GetCurrentUserId();
+
+            var result = await _taskService.UpdateTaskAsync(id, dto, (long)userId!);
 
             if (!result.IsSuccess)
                 return result.ErrorCode switch
@@ -112,7 +117,7 @@ namespace TaskManagement.API.Controllers
                     _ => BadRequest(ApiResponse<object>.FailResponse(ErrorCodes.InternalServerError))
                 };
 
-            return Ok(ApiResponse<object>.SuccessResponse(new { data = result.Data }));
+            return Ok(ApiResponse<object>.SuccessResponse(result.Data!));
         }
 
         /// <summary>
@@ -128,7 +133,8 @@ namespace TaskManagement.API.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
         public async Task<IActionResult> UpdateTaskStatus(long id, [FromBody] UpdateTaskStatusDto dto)
         {
-            var result = await _taskService.UpdateTaskStatusAsync(id, dto);
+            var userId = User.GetCurrentUserId();
+            var result = await _taskService.UpdateTaskStatusAsync(id, dto, (long)userId!);
 
             if (!result.IsSuccess)
                 return result.ErrorCode switch
@@ -142,7 +148,7 @@ namespace TaskManagement.API.Controllers
                     _ => BadRequest(ApiResponse<object>.FailResponse(ErrorCodes.InternalServerError))
                 };
 
-            return Ok(ApiResponse<object>.SuccessResponse(new { data = result.Data }));
+            return Ok(ApiResponse<object>.SuccessResponse(result.Data!));
         }
 
         /// <summary>
@@ -166,7 +172,7 @@ namespace TaskManagement.API.Controllers
                     _ => BadRequest(ApiResponse<object>.FailResponse(ErrorCodes.InternalServerError))
                 };
 
-            return Ok(ApiResponse<object>.SuccessResponse(new { data = new { id } }, result.SuccessCode));
+            return Ok(ApiResponse<object>.SuccessResponse(new { id }, result.SuccessCode!));
         }
     }
 }

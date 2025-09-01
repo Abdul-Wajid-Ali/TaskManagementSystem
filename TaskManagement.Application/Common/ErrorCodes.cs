@@ -10,6 +10,7 @@
 
         // Error Code Tasks
         public const string TaskNotFound = "TASK_NOT_FOUND";
+        public const string InvalidTaskStatus = "INVALID_TASK_STATUS";
         public const string TaskCreationFailed = "TASK_CREATION_FAILED";
         public const string TaskUpdateFailed = "TASK_UPDATE_FAILED";
         public const string TaskDeletionFailed = "TASK_DELETION_FAILED";

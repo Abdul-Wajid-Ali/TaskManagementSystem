@@ -22,13 +22,14 @@ namespace TaskManagement.Application.Services
         }
 
         // Create a new user
-        public async Task<Result<long>> CreateUserAsync(CreateUserDto dto)
+        public async Task<Result<long>> CreateUserAsync(CreateUserDto dto, long Id)
         {
             if (await _repository.GetUserByEmailAsync(dto.Email) != null)
                 return Result<long>.Fail(ErrorCodes.UserEmailAlreadyExists);
 
             var newUser = _mapper.Map<User>(dto);
 
+            newUser.CreatedByUserId = Id;
             newUser.Role = UserRole.Employee;
             newUser.CreationMethod = UserCreationMethod.CreatedByAdmin;
             newUser.PasswordSalt = _passwordService.GenerateSalt();
@@ -83,8 +84,10 @@ namespace TaskManagement.Application.Services
                 return Result<UserDto>.Fail(ErrorCodes.UserNotFound);
 
             // Check for email uniqueness if email is being updated
-            if (!string.IsNullOrWhiteSpace(dto.Username) && await _repository.GetUserByEmailAsync(dto.Email) != null)
+            if (!string.IsNullOrWhiteSpace(dto.Username) && await _repository.GetUserByEmailAsync(dto.Email!) != null)
                 return Result<UserDto>.Fail(ErrorCodes.UserEmailAlreadyExists);
+
+            existingUser.UpdatedOn = DateTime.UtcNow;
 
             // Update fields if provided
             existingUser.Email = string.IsNullOrWhiteSpace(dto.Email) ? existingUser.Email : dto.Email;

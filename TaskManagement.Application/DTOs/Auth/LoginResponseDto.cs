@@ -5,6 +5,8 @@ namespace TaskManagement.Application.DTOs.Auth
 {
     public class LoginResponseDto
     {
+        public long Id { get; set; }
+
         [MaxLength(300)]
         public string Email { get; set; } = default!;
 
