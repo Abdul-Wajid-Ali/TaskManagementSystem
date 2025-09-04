@@ -79,9 +79,25 @@ namespace TaskManagement.Application.Services
         }
 
         // Change user password
-        public Task<Result<ChangePasswordDto>> ChangePasswordAsync(ChangePasswordDto dto)
+        public async Task<Result<ChangePasswordDto>> ChangePasswordAsync(ChangePasswordDto dto, long id)
         {
-            throw new NotImplementedException();
+            // Get user by id
+            var user = await _repository.GetUserByIdAsync(id);
+
+            if (user == null)
+                return Result<ChangePasswordDto>.Fail(ErrorCodes.UserNotFound);
+
+            // Verify old password
+            var isValidOldPassword = _passwordService.VerifyPassword(dto.CurrentPassword, user.PasswordSalt, user.PasswordHash);
+            if (!isValidOldPassword)
+                return Result<ChangePasswordDto>.Fail(ErrorCodes.InvalidOldPassword);
+
+            // Change password
+            user.PasswordSalt = _passwordService.GenerateSalt();
+            user.PasswordHash = _passwordService.HashPassword(dto.NewPassword, user.PasswordSalt);
+            await _repository.UpdateUserAsync(user);
+
+            return Result<ChangePasswordDto>.Success(dto);
         }
 
         // Refresh JWT token
@@ -92,10 +108,12 @@ namespace TaskManagement.Application.Services
             if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
                 return Result<LoginResponseDto>.Fail(ErrorCodes.InvalidRefreshToken);
 
+            // Generate new token and refresh token
             var response = _mapper.Map<LoginResponseDto>(user);
             response.Token = _tokenService.GenerateToken(_mapper.Map<UserClaimsDto>(response));
             response.RefreshToken = _tokenService.GenerateRefreshToken();
 
+            // Update refresh token and expiry time
             user.RefreshToken = response.RefreshToken;
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
             await _repository.UpdateUserAsync(user);
@@ -104,9 +122,15 @@ namespace TaskManagement.Application.Services
         }
 
         // Get user profile details
-        public Task<Result<UserProfileDto>> GetUserProfileAsync()
+        public async Task<Result<UserProfileDto>> GetUserProfileAsync(long id)
         {
-            throw new NotImplementedException();
+            // Get user by id
+            var user = await _repository.GetUserByIdAsync(id);
+
+            if (user == null)
+                return Result<UserProfileDto>.Fail(ErrorCodes.UserNotFound);
+
+            return Result<UserProfileDto>.Success(_mapper.Map<UserProfileDto>(user));
         }
     }
 }
