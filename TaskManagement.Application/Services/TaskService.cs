@@ -3,6 +3,7 @@ using TaskManagement.Application.Common;
 using TaskManagement.Application.DTOs.Tasks;
 using TaskManagement.Application.Interfaces.Repositories;
 using TaskManagement.Application.Interfaces.Services;
+using TaskManagement.Domain.Enums;
 using Task = TaskManagement.Domain.Entities.Task;
 
 namespace TaskManagement.Application.Services
@@ -26,11 +27,13 @@ namespace TaskManagement.Application.Services
             newTask.CreatedByUserId = id;
             newTask.CreatedOn = DateTime.UtcNow;
 
+            // Persist the task before assigning users to ensure a valid TaskId
+            await _repository.CreateTaskAsync(newTask);
+
             // If multiple users are assigned, handle the assignment
             if (dto.AssignedUserIds != null && dto.AssignedUserIds.Count > 1)
                 await _repository.AssignUsersToTaskAsync(newTask, dto.AssignedUserIds);
 
-            await _repository.CreateTaskAsync(newTask);
 
             return Result<long>.Success(newTask.Id, SuccessCodes.TaskCreatedSuccessfully);
         }
@@ -112,7 +115,7 @@ namespace TaskManagement.Application.Services
             if (!isTaskAssigned)
                 return Result<TaskDto>.Fail(ErrorCodes.TaskNotFound);
 
-            if (Enum.IsDefined(typeof(TaskStatus), dto.Status))
+            if (Enum.IsDefined(typeof(TaskProgress), dto.Status))
                 return Result<TaskDto>.Fail(ErrorCodes.InvalidTaskStatus);
 
             // Update only status field

@@ -84,7 +84,7 @@ namespace TaskManagement.Application.Services
                 return Result<UserDto>.Fail(ErrorCodes.UserNotFound);
 
             // Check for email uniqueness if email is being updated
-            if (!string.IsNullOrWhiteSpace(dto.Username) && await _repository.GetUserByEmailAsync(dto.Email!) != null)
+            if (!string.IsNullOrWhiteSpace(dto.Email) && await _repository.GetUserByEmailAsync(dto.Email!) != null)
                 return Result<UserDto>.Fail(ErrorCodes.UserEmailAlreadyExists);
 
             existingUser.UpdatedOn = DateTime.UtcNow;

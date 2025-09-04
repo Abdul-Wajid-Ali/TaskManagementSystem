@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using System.Text.Json.Serialization;
 using TaskManagement.Application.Config;
 using TaskManagement.Application.Interfaces.Repositories;
 using TaskManagement.Application.Interfaces.Services;
@@ -29,6 +30,8 @@ namespace TaskManagement.API.Extensions
             // Add Controllers with JSON options
             services.AddControllers().AddJsonOptions(opt =>
             {
+                opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                opt.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
                 opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
 
@@ -82,9 +85,6 @@ namespace TaskManagement.API.Extensions
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
                 };
             });
-
-            // ✅ NEW in .NET 9 — expose OpenAPI endpoints
-            services.AddOpenApi();
 
             return services;
         }

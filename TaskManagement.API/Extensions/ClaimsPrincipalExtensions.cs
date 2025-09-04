@@ -32,7 +32,7 @@ namespace TaskManagement.API.Extensions
             if (user == null)
                 return null;
 
-            var userRoleClaim = user.FindFirst(ClaimTypes.Email) ?? user.FindFirst("Email");
+            var userRoleClaim = user.FindFirst(ClaimTypes.Role) ?? user.FindFirst("Role");
 
             if (userRoleClaim != null)
                 return userRoleClaim.Value;

@@ -54,17 +54,13 @@ namespace TaskManagement.Infrastructure.Repositories
         // Assign multiple users to a task
         public async Task<bool> AssignUsersToTaskAsync(Task task, List<long> userIds)
         {
-            _dbContext.Attach(task);
-
-            foreach (var userId in userIds)
+            var assignments = userIds.Select(userId => new UserTask
             {
-                task.UserTasks.Add(new UserTask
-                {
-                    TaskId = task.Id,
-                    UserId = userId
-                });
-            }
+                TaskId = task.Id,
+                UserId = userId
+            });
 
+            await _dbContext.UsersTasks.AddRangeAsync(assignments);
             await _dbContext.SaveChangesAsync();
             return true;
         }
