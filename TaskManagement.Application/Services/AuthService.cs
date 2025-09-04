@@ -57,6 +57,7 @@ namespace TaskManagement.Application.Services
             if (user == null)
                 return Result<LoginResponseDto>.Fail(ErrorCodes.UserNotFound);
 
+            // Verify password
             var isValidCreds = _passwordService.VerifyPassword(dto.Password, user.PasswordSalt, user.PasswordHash);
 
             //If password does not match, return error
@@ -66,9 +67,15 @@ namespace TaskManagement.Application.Services
             var loggedInUser = _mapper.Map<LoginResponseDto>(user);
 
             loggedInUser.Token = _tokenService.GenerateToken(_mapper.Map<UserClaimsDto>(loggedInUser));
+            loggedInUser.RefreshToken = _tokenService.GenerateRefreshToken();
+
+            // Update refresh token and expiry time
+            user.RefreshToken = loggedInUser.RefreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await _repository.UpdateUserAsync(user);
 
             // Return success result
-            return Result<LoginResponseDto>.Success(_mapper.Map<LoginResponseDto>(loggedInUser));
+            return Result<LoginResponseDto>.Success(loggedInUser);
         }
 
         // Change user password
@@ -78,9 +85,22 @@ namespace TaskManagement.Application.Services
         }
 
         // Refresh JWT token
-        public Task<Result<RefreshTokenRequestDto>> RefreshTokenAsync(RefreshTokenRequestDto dto)
+        public async Task<Result<LoginResponseDto>> RefreshTokenAsync(RefreshTokenRequestDto dto)
         {
-            throw new NotImplementedException();
+            var user = await _repository.GetUserByRefreshTokenAsync(dto.RefreshToken);
+
+            if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+                return Result<LoginResponseDto>.Fail(ErrorCodes.InvalidRefreshToken);
+
+            var response = _mapper.Map<LoginResponseDto>(user);
+            response.Token = _tokenService.GenerateToken(_mapper.Map<UserClaimsDto>(response));
+            response.RefreshToken = _tokenService.GenerateRefreshToken();
+
+            user.RefreshToken = response.RefreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await _repository.UpdateUserAsync(user);
+
+            return Result<LoginResponseDto>.Success(response);
         }
 
         // Get user profile details

@@ -7,6 +7,7 @@
         public const string InvalidCredentials = "INVALID_CREDENTIALS";
         public const string InternalServerError = "INTERNAL_SERVER_ERROR";
         public const string UserEmailAlreadyExists = "USER_EMAIL_ALREADY_EXISTS";
+        public const string InvalidRefreshToken = "INVALID_REFRESH_TOKEN";
 
         // Error Code Tasks
         public const string TaskNotFound = "TASK_NOT_FOUND";

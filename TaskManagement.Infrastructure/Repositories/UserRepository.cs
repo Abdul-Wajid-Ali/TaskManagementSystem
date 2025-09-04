@@ -53,5 +53,12 @@ namespace TaskManagement.Infrastructure.Repositories
             return _dbContext.Users.AsNoTracking()
                 .AnyAsync(item => item.Id == userId && item.CreatedByUserId == currentUserId && item.DeletedOn == null);
         }
+
+        public Task<User?> GetUserByRefreshTokenAsync(string refreshToken)
+        {
+            return _dbContext.Users.AsNoTracking()
+                .Where(item => item.DeletedOn == null)
+                .FirstOrDefaultAsync(item => string.Equals(item.RefreshToken, refreshToken));
+        }
     }
 }

@@ -33,5 +33,16 @@ namespace TaskManagement.API.Controllers
 
             return Ok(ApiResponse<object>.SuccessResponse(result.Data!));
         }
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto dto)
+        {
+            var result = await _authService.RefreshTokenAsync(dto);
+
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponse<object>.FailResponse(result.ErrorCode));
+
+            return Ok(ApiResponse<object>.SuccessResponse(result.Data!));
+        }
     }
 }

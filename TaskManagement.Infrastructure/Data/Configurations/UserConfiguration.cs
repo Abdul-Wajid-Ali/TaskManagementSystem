@@ -30,8 +30,15 @@ namespace TaskManagement.Infrastructure.Data.Configurations
                 .HasMaxLength(1000);
 
             builder.Property(u => u.PasswordSalt)
-                .IsRequired(true)
+                 .IsRequired(true)
+                 .HasMaxLength(1000);
+
+            builder.Property(u => u.RefreshToken)
+                .IsRequired(false)
                 .HasMaxLength(1000);
+
+            builder.Property(u => u.RefreshTokenExpiryTime)
+                .IsRequired(false);
 
             builder.HasOne(u => u.CreatedByUser)
                 .WithMany()

@@ -10,7 +10,7 @@ namespace TaskManagement.Application.Interfaces.Services
 
         Task<Result<LoginResponseDto>> LoginUserAsync(LoginRequestDto dto);
 
-        Task<Result<RefreshTokenRequestDto>> RefreshTokenAsync(RefreshTokenRequestDto dto);
+        Task<Result<LoginResponseDto>> RefreshTokenAsync(RefreshTokenRequestDto dto);
 
         Task<Result<ChangePasswordDto>> ChangePasswordAsync(ChangePasswordDto dto);
 

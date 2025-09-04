@@ -15,6 +15,10 @@ namespace TaskManagement.Domain.Entities
 
         public string PasswordSalt { get; set; } = default!;
 
+        public string? RefreshToken { get; set; }
+
+        public DateTime? RefreshTokenExpiryTime { get; set; }
+
         // Business rules
         public UserCreationMethod CreationMethod { get; set; } = default!;
 
