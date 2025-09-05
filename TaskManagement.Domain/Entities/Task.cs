@@ -2,6 +2,9 @@
 
 namespace TaskManagement.Domain.Entities
 {
+    /// <summary>
+    ///    Represents a task within the task management system.
+    /// </summary>
     public class Task
     {
         public long Id { get; set; } = default!;

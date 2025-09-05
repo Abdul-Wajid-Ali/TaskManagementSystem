@@ -1,4 +1,5 @@
 ﻿using TaskManagement.API.Extensions;
+using TaskManagement.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,7 @@ app.UseHttpsRedirection();
 
 // 3. AuthN & AuthZ
 app.UseAuthentication();
+app.UseMiddleware<ExceptionLoggingMiddleware>();
 app.UseAuthorization();
 
 // 4. Controllers / endpoints

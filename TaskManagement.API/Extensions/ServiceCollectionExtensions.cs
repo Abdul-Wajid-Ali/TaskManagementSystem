@@ -6,11 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using TaskManagement.Application.Config;
+using TaskManagement.Application.Interfaces.Logging;
 using TaskManagement.Application.Interfaces.Repositories;
 using TaskManagement.Application.Interfaces.Services;
 using TaskManagement.Application.Mapping;
 using TaskManagement.Application.Services;
 using TaskManagement.Infrastructure.Data;
+using TaskManagement.Infrastructure.Logging;
 using TaskManagement.Infrastructure.Repositories;
 
 namespace TaskManagement.API.Extensions
@@ -69,6 +71,7 @@ namespace TaskManagement.API.Extensions
             services.AddScoped<IPasswordService, PasswordService>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IExceptionLogWriter, EfExceptionLogWriter>();
 
             // Authentication / JWT
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

@@ -2,6 +2,9 @@
 
 namespace TaskManagement.Domain.Entities
 {
+    /// <summary>
+    ///   Represents a user within the task management system.
+    /// </summary>
     public class User
     {
         public long Id { get; set; }

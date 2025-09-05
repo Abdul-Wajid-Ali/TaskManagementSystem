@@ -1,5 +1,8 @@
 ﻿namespace TaskManagement.Domain.Entities
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class UserTask
     {
         public long UserId { get; set; } = default!;
