@@ -10,20 +10,15 @@ namespace TaskManagement.API.Middleware
     public class ExceptionLoggingMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IExceptionLogWriter _writer;
         private readonly ILogger<ExceptionLoggingMiddleware> _logger;
 
-        public ExceptionLoggingMiddleware(
-            RequestDelegate next,
-            IExceptionLogWriter writer,
-            ILogger<ExceptionLoggingMiddleware> logger)
+        public ExceptionLoggingMiddleware(RequestDelegate next, ILogger<ExceptionLoggingMiddleware> logger)
         {
             _next = next;
-            _writer = writer;
             _logger = logger;
         }
 
-        public async Task InvokeAsync(HttpContext context)
+        public async Task InvokeAsync(HttpContext context, IExceptionLogWriter writer)
         {
             try
             {
@@ -51,7 +46,7 @@ namespace TaskManagement.API.Middleware
                 };
 
                 // Write to DB (don’t let failures here crash the request)
-                await _writer.WriteAsync(log);
+                await writer.WriteAsync(log);
 
                 // Also log to app logs (observability)
                 _logger.LogError(ex,
