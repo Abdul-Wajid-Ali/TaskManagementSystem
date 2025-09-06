@@ -7,12 +7,12 @@ namespace TaskManagement.Application.Interfaces.Services
     {
         Task<Result<long>> CreateUserAsync(CreateUserDto dto, long Id);
 
-        Task<Result<UserDto>> GetUserByIdAsync(long id);
+        Task<Result<UserDto>> GetUserByIdAsync(long id, long userId);
 
         Task<Result<IEnumerable<UserDto>>> GetCreatedUsersAsync(long id);
 
         Task<Result<UserDto>> UpdateUserAsync(long userId, UpdateUserDto dto);
 
-        Task<Result<bool>> SoftDeleteUserAsync(long id);
+        Task<Result<bool>> SoftDeleteUserAsync(long id, long userId);
     }
 }

@@ -50,23 +50,32 @@ namespace TaskManagement.Application.Services
         }
 
         // Get a user by Id
-        public async Task<Result<UserDto>> GetUserByIdAsync(long id)
+        public async Task<Result<UserDto>> GetUserByIdAsync(long id, long userId)
         {
-            var user = await _repository.GetUserByIdAsync(id)
-                .ContinueWith(item => _mapper.Map<UserDto?>(item.Result));
+            var user = await _repository.GetUserByIdAsync(id);
 
+            // Check if user exists
             if (user == null)
                 return Result<UserDto>.Fail(ErrorCodes.UserNotFound);
 
-            return Result<UserDto>.Success(user);
+            // Prevent deletion of Admins and Employees not created by the requesting user
+            if (user.Role == UserRole.Admin || (user.Role == UserRole.Employee && user.CreatedByUserId != userId))
+                return Result<UserDto>.Fail(ErrorCodes.UserNotFound);
+
+            return Result<UserDto>.Success(_mapper.Map<UserDto>(user));
         }
 
         // Soft delete a user by setting DeletedOn timestamp
-        public async Task<Result<bool>> SoftDeleteUserAsync(long id)
+        public async Task<Result<bool>> SoftDeleteUserAsync(long id, long userId)
         {
             var existingUser = await _repository.GetUserByIdAsync(id);
 
+            // Check if user exists
             if (existingUser == null)
+                return Result<bool>.Fail(ErrorCodes.UserNotFound);
+
+            // Prevent deletion of Admins and Employees not created by the requesting user
+            if (existingUser.Role == UserRole.Admin || (existingUser.Role == UserRole.Employee && existingUser.CreatedByUserId != userId))
                 return Result<bool>.Fail(ErrorCodes.UserNotFound);
 
             existingUser.DeletedOn = DateTime.UtcNow;
@@ -81,6 +90,10 @@ namespace TaskManagement.Application.Services
 
             // Check if user exists
             if (existingUser == null)
+                return Result<UserDto>.Fail(ErrorCodes.UserNotFound);
+
+            // Prevent updates to Admins and Employees not created by the requesting user
+            if (existingUser.Role == UserRole.Admin || (existingUser.Role == UserRole.Employee && existingUser.CreatedByUserId != userId))
                 return Result<UserDto>.Fail(ErrorCodes.UserNotFound);
 
             // Check for email uniqueness if email is being updated

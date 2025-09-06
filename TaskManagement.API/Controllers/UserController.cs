@@ -41,7 +41,9 @@ namespace TaskManagement.API.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
         public async Task<Result<UserDto>> GetUser(long id)
         {
-            return await _userService.GetUserByIdAsync(id);
+            var currentUserId = User.GetCurrentUserId();
+
+            return await _userService.GetUserByIdAsync(id, (long)currentUserId!);
         }
 
         /// <summary>
@@ -82,7 +84,8 @@ namespace TaskManagement.API.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
         public async Task<Result<bool>> DeleteUser(long id)
         {
-            return await _userService.SoftDeleteUserAsync(id);
+            var currentUserId = User.GetCurrentUserId();
+            return await _userService.SoftDeleteUserAsync(id, (long)currentUserId!);
         }
     }
 }
