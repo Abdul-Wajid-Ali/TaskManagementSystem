@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using TaskManagement.API.Extensions;
 using TaskManagement.API.Responses;
+using TaskManagement.Application.Common;
 using TaskManagement.Application.DTOs.Auth;
+using TaskManagement.Application.DTOs.Users;
 using TaskManagement.Application.Interfaces.Services;
 
 namespace TaskManagement.API.Controllers
@@ -20,16 +22,11 @@ namespace TaskManagement.API.Controllers
         /// <param name="dto">Registration details.</param>
         /// <returns>User details and tokens.</returns>
         [HttpPost("register")]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        [ProducesResponseType(typeof(ApiResponse<object>), 400)]
-        public async Task<IActionResult> Register([FromBody] RegisterRequestDto dto)
+        [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<UserDto>), 400)]
+        public async Task<Result<UserDto>> Register([FromBody] RegisterRequestDto dto)
         {
-            var result = await _authService.RegisterUserAsync(dto);
-
-            if (!result.IsSuccess)
-                return BadRequest(ApiResponse<object>.FailResponse(result.ErrorCode));
-
-            return Ok(ApiResponse<object>.SuccessResponse(result.Data!));
+            return await _authService.RegisterUserAsync(dto);
         }
 
         /// <summary>
@@ -37,17 +34,12 @@ namespace TaskManagement.API.Controllers
         /// </summary>
         /// <param name="dto">Login credentials.</param>
         /// <returns>JWT and refresh token.</returns>
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        [ProducesResponseType(typeof(ApiResponse<object>), 400)]
+        [ProducesResponseType(typeof(ApiResponse<LoginResponseDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<LoginResponseDto>), 400)]
         [HttpPost("login")]
-        public async Task<IActionResult> login([FromBody] LoginRequestDto dto)
+        public async Task<Result<LoginResponseDto>> Login([FromBody] LoginRequestDto dto)
         {
-            var result = await _authService.LoginUserAsync(dto);
-
-            if (!result.IsSuccess)
-                return BadRequest(ApiResponse<object>.FailResponse(result.ErrorCode));
-
-            return Ok(ApiResponse<object>.SuccessResponse(result.Data!));
+            return await _authService.LoginUserAsync(dto);
         }
 
         /// <summary>
@@ -57,16 +49,11 @@ namespace TaskManagement.API.Controllers
         /// <returns>New JWT and refresh token.</returns>
         [Authorize]
         [HttpPost("refresh-token")]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        [ProducesResponseType(typeof(ApiResponse<object>), 400)]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto dto)
+        [ProducesResponseType(typeof(ApiResponse<LoginResponseDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<LoginResponseDto>), 400)]
+        public async Task<Result<LoginResponseDto>> RefreshToken([FromBody] RefreshTokenRequestDto dto)
         {
-            var result = await _authService.RefreshTokenAsync(dto);
-
-            if (!result.IsSuccess)
-                return BadRequest(ApiResponse<object>.FailResponse(result.ErrorCode));
-
-            return Ok(ApiResponse<object>.SuccessResponse(result.Data!));
+            return await _authService.RefreshTokenAsync(dto);
         }
 
         /// <summary>
@@ -76,17 +63,13 @@ namespace TaskManagement.API.Controllers
         /// <returns>Success or failure response.</returns>
         [Authorize]
         [HttpPost("change-password")]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        [ProducesResponseType(typeof(ApiResponse<object>), 400)]
-        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 400)]
+        public async Task<Result<bool>> ChangePassword([FromBody] ChangePasswordDto dto)
         {
             var userId = User.GetCurrentUserId();
-            var result = await _authService.ChangePasswordAsync(dto, (long)userId!);
 
-            if (!result.IsSuccess)
-                return BadRequest(ApiResponse<object>.FailResponse(result.ErrorCode));
-
-            return Ok(ApiResponse<object>.SuccessResponse(result.Data!));
+            return await _authService.ChangePasswordAsync(dto, (long)userId!);
         }
 
         /// <summary>
@@ -96,17 +79,13 @@ namespace TaskManagement.API.Controllers
         /// <returns>Success or failure response.</returns>
         [Authorize]
         [HttpPost("profile")]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        [ProducesResponseType(typeof(ApiResponse<object>), 400)]
-        public async Task<IActionResult> GetProfile()
+        [ProducesResponseType(typeof(ApiResponse<UserProfileDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<UserProfileDto>), 400)]
+        public async Task<Result<UserProfileDto>> GetProfile()
         {
             var userId = User.GetCurrentUserId();
-            var result = await _authService.GetUserProfileAsync((long)userId!);
 
-            if (!result.IsSuccess)
-                return BadRequest(ApiResponse<object>.FailResponse(result.ErrorCode));
-
-            return Ok(ApiResponse<object>.SuccessResponse(result.Data!));
+            return await _authService.GetUserProfileAsync((long)userId!);
         }
     }
 }

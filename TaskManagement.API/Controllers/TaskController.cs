@@ -7,9 +7,10 @@ using TaskManagement.Application.DTOs.Tasks;
 using TaskManagement.Application.Interfaces.Services;
 
 namespace TaskManagement.API.Controllers
-{    /// <summary>
-     /// Controller for managing tasks.
-     /// </summary>
+{
+    /// <summary>
+    /// Controller for managing tasks.
+    /// </summary>
     [ApiController]
     [Route("api/task")]
     public class TaskController(ITaskService _taskService) : ControllerBase
@@ -21,16 +22,14 @@ namespace TaskManagement.API.Controllers
         /// <returns>Id of the newly created task with success message.</returns>
         [Authorize(Roles = "Admin")]
         [HttpPost("create")]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        [ProducesResponseType(typeof(ApiResponse<object>), 400)]
-        public async Task<IActionResult> CreateTask([FromBody] CreateTaskDto dto)
+        [ProducesResponseType(typeof(ApiResponse<long>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<long>), 400)]
+        public async Task<Result<long>> CreateTask([FromBody] CreateTaskDto dto)
         {
             // Get the current logged-in user's Id from the JWT token claims
             var userId = User.GetCurrentUserId();
 
-            var result = await _taskService.CreateTaskAsync(dto, (long)userId!);
-
-            return Ok(ApiResponse<object>.SuccessResponse(new { id = result.Data }, result.SuccessCode!));
+            return await _taskService.CreateTaskAsync(dto, (long)userId!);
         }
 
         /// <summary>
@@ -41,15 +40,10 @@ namespace TaskManagement.API.Controllers
         [Authorize(Roles = "Admin")]
         [HttpGet("{id:long}")]
         [ProducesResponseType(typeof(ApiResponse<TaskDto>), 200)]
-        [ProducesResponseType(typeof(ApiResponse<object>), 404)]
-        public async Task<IActionResult> GetTask(long id)
+        [ProducesResponseType(typeof(ApiResponse<TaskDto>), 404)]
+        public async Task<Result<TaskDto>> GetTask(long id)
         {
-            var result = await _taskService.GetTaskByIdAsync(id);
-
-            if (!result.IsSuccess)
-                return BadRequest(ApiResponse<Object>.FailResponse(result.ErrorCode));
-
-            return Ok(ApiResponse<Object>.SuccessResponse(result.Data!));
+            return await _taskService.GetTaskByIdAsync(id);
         }
 
         /// <summary>
@@ -58,16 +52,14 @@ namespace TaskManagement.API.Controllers
         /// <returns>Tasks List.</returns>
         [HttpGet("created")]
         [Authorize(Roles = "Admin")]
-        [ProducesResponseType(typeof(ApiResponse<TaskDto>), 200)]
-        [ProducesResponseType(typeof(ApiResponse<object>), 404)]
-        public async Task<IActionResult> GetAllCreatedTasks()
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<TaskDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<TaskDto>>), 404)]
+        public async Task<Result<IEnumerable<TaskDto>>> GetAllCreatedTasks()
         {
             // Get the current logged-in user's Id from the JWT token claims
             var userId = User.GetCurrentUserId();
 
-            var result = await _taskService.GetCreatedTasksAsync((long)userId!);
-
-            return Ok(ApiResponse<Object>.SuccessResponse(result.Data!));
+            return await _taskService.GetCreatedTasksAsync((long)userId!);
         }
 
         /// <summary>
@@ -76,16 +68,14 @@ namespace TaskManagement.API.Controllers
         /// <returns>Tasks List.</returns>
         [HttpGet("assigned")]
         [Authorize(Roles = "Employee")]
-        [ProducesResponseType(typeof(ApiResponse<TaskDto>), 200)]
-        [ProducesResponseType(typeof(ApiResponse<object>), 404)]
-        public async Task<IActionResult> GetAllAssignedTasks()
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<TaskDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<TaskDto>>), 404)]
+        public async Task<Result<IEnumerable<TaskDto>>> GetAllAssignedTasks()
         {
             // Get the current logged-in user's Id from the JWT token claims
             var userId = User.GetCurrentUserId();
 
-            var result = await _taskService.GetAssignedTasksAsync((long)userId!);
-
-            return Ok(ApiResponse<Object>.SuccessResponse(result.Data!));
+            return await _taskService.GetAssignedTasksAsync((long)userId!);
         }
 
         /// <summary>
@@ -96,28 +86,14 @@ namespace TaskManagement.API.Controllers
         /// <returns>Status of the update.</returns>
         [Authorize(Roles = "Admin")]
         [HttpPut("{id:long}/update")]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        [ProducesResponseType(typeof(ApiResponse<object>), 400)]
-        [ProducesResponseType(typeof(ApiResponse<object>), 404)]
-        public async Task<IActionResult> UpdateTask(long id, [FromBody] UpdateTaskDto dto)
+        [ProducesResponseType(typeof(ApiResponse<TaskDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<TaskDto>), 400)]
+        [ProducesResponseType(typeof(ApiResponse<TaskDto>), 404)]
+        public async Task<Result<TaskDto>> UpdateTask(long id, [FromBody] UpdateTaskDto dto)
         {
             var userId = User.GetCurrentUserId();
 
-            var result = await _taskService.UpdateTaskAsync(id, dto, (long)userId!);
-
-            if (!result.IsSuccess)
-                return result.ErrorCode switch
-                {
-                    ErrorCodes.TaskNotFound
-                        => NotFound(ApiResponse<object>.FailResponse(result.ErrorCode)),
-
-                    ErrorCodes.UserEmailAlreadyExists
-                        => Conflict(ApiResponse<object>.FailResponse(result.ErrorCode)),
-
-                    _ => BadRequest(ApiResponse<object>.FailResponse(ErrorCodes.InternalServerError))
-                };
-
-            return Ok(ApiResponse<object>.SuccessResponse(result.Data!));
+            return await _taskService.UpdateTaskAsync(id, dto, (long)userId!);
         }
 
         /// <summary>
@@ -128,27 +104,14 @@ namespace TaskManagement.API.Controllers
         /// <returns>Status of the update.</returns>
         [Authorize(Roles = "Employee")]
         [HttpPut("{id:long}/update/status")]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        [ProducesResponseType(typeof(ApiResponse<object>), 400)]
-        [ProducesResponseType(typeof(ApiResponse<object>), 404)]
-        public async Task<IActionResult> UpdateTaskStatus(long id, [FromBody] UpdateTaskStatusDto dto)
+        [ProducesResponseType(typeof(ApiResponse<TaskDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<TaskDto>), 400)]
+        [ProducesResponseType(typeof(ApiResponse<TaskDto>), 404)]
+        public async Task<Result<TaskDto>> UpdateTaskStatus(long id, [FromBody] UpdateTaskStatusDto dto)
         {
             var userId = User.GetCurrentUserId();
-            var result = await _taskService.UpdateTaskStatusAsync(id, dto, (long)userId!);
 
-            if (!result.IsSuccess)
-                return result.ErrorCode switch
-                {
-                    ErrorCodes.TaskNotFound
-                        => NotFound(ApiResponse<object>.FailResponse(result.ErrorCode)),
-
-                    ErrorCodes.UserEmailAlreadyExists
-                        => Conflict(ApiResponse<object>.FailResponse(result.ErrorCode)),
-
-                    _ => BadRequest(ApiResponse<object>.FailResponse(ErrorCodes.InternalServerError))
-                };
-
-            return Ok(ApiResponse<object>.SuccessResponse(result.Data!));
+            return await _taskService.UpdateTaskStatusAsync(id, dto, (long)userId!);
         }
 
         /// <summary>
@@ -158,21 +121,11 @@ namespace TaskManagement.API.Controllers
         /// <returns>Status of deletion.</returns>
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id:long}/delete")]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        [ProducesResponseType(typeof(ApiResponse<object>), 404)]
-        public async Task<IActionResult> DeleteTask(long id)
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 404)]
+        public async Task<Result<bool>> DeleteTask(long id)
         {
-            var result = await _taskService.SoftDeleteTaskAsync(id);
-
-            if (!result.IsSuccess)
-                return result.ErrorCode switch
-                {
-                    ErrorCodes.UserNotFound
-                        => NotFound(ApiResponse<object>.FailResponse(result.ErrorCode)),
-                    _ => BadRequest(ApiResponse<object>.FailResponse(ErrorCodes.InternalServerError))
-                };
-
-            return Ok(ApiResponse<object>.SuccessResponse(new { id }, result.SuccessCode!));
+            return await _taskService.SoftDeleteTaskAsync(id);
         }
     }
 }

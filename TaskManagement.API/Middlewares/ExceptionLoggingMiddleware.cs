@@ -7,6 +7,9 @@ using Task = System.Threading.Tasks.Task;
 
 namespace TaskManagement.API.Middleware
 {
+    /// <summary>
+    /// Middleware to catch unhandled exceptions, log them, and return a generic error response.
+    /// </summary>
     public class ExceptionLoggingMiddleware
     {
         private readonly RequestDelegate _next;
@@ -18,15 +21,17 @@ namespace TaskManagement.API.Middleware
             _logger = logger;
         }
 
+        // This method is called for each HTTP request after the previous middleware in the pipeline.
         public async Task InvokeAsync(HttpContext context, IExceptionLogWriter writer)
         {
             try
             {
+                // Proceed down the pipeline, if exception occurs, we jump to catch block
                 await _next(context);
             }
             catch (Exception ex)
             {
-                // Best-effort: capture info before response is written
+                // Gather required info for logging
                 var userId = context.User.GetCurrentUserId();
                 var method = context.Request.Method;
                 var endpoint = context.Request.Path.HasValue ? context.Request.Path.Value! : string.Empty;
@@ -34,6 +39,7 @@ namespace TaskManagement.API.Middleware
                 // If nothing was written yet, make sure we return a 500
                 var statusCode = context.Response.HasStarted ? context.Response.StatusCode : (int)HttpStatusCode.InternalServerError;
 
+                // Create log entry
                 var log = new ExceptionLog
                 {
                     UserId = userId,
@@ -53,13 +59,15 @@ namespace TaskManagement.API.Middleware
                     "Unhandled exception at {Method} {Endpoint}. UserId={UserId}, StatusCode={StatusCode}, TraceId={TraceId}",
                     method, endpoint, userId?.ToString() ?? "anonymous", statusCode, context.TraceIdentifier);
 
-                // Craft a controlled error response if possible
+                // If response has not started, we can write a generic 500 response
                 if (!context.Response.HasStarted)
                 {
+                    // Clear any existing response
                     context.Response.Clear();
                     context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                     context.Response.ContentType = "application/json";
 
+                    // Return minimal info to avoid leaking details
                     var payload = new
                     {
                         title = "An unexpected error occurred.",
@@ -67,6 +75,7 @@ namespace TaskManagement.API.Middleware
                         traceId = context.TraceIdentifier
                     };
 
+                    // Serialize and write response
                     await context.Response.WriteAsync(JsonSerializer.Serialize(payload));
                 }
                 else

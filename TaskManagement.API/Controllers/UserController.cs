@@ -7,9 +7,10 @@ using TaskManagement.Application.DTOs.Users;
 using TaskManagement.Application.Interfaces.Services;
 
 namespace TaskManagement.API.Controllers
-{    /// <summary>
-     /// Controller for managing users.
-     /// </summary>
+{
+    /// <summary>
+    /// Controller for managing users.
+    /// </summary>
     [ApiController]
     [Authorize(Roles = "Admin")]
     [Route("api/user")]
@@ -21,17 +22,13 @@ namespace TaskManagement.API.Controllers
         /// <param name="dto">User data for creation.</param>
         /// <returns>Id of the newly created user with success message.</returns>
         [HttpPost("create")]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<long>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 400)]
-        public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
+        public async Task<Result<long>> CreateUser([FromBody] CreateUserDto dto)
         {
-            var currentUserId = User.GetCurrentUserId();    
-            var result = await _userService.CreateUserAsync(dto, (long)currentUserId!);
+            var currentUserId = User.GetCurrentUserId();
 
-            if (!result.IsSuccess)
-                return BadRequest(ApiResponse<Object>.FailResponse(result.ErrorCode));
-
-            return Ok(ApiResponse<object>.SuccessResponse(new { id = result.Data }, result.SuccessCode!));
+            return await _userService.CreateUserAsync(dto, (long)currentUserId!);
         }
 
         /// <summary>
@@ -42,14 +39,9 @@ namespace TaskManagement.API.Controllers
         [HttpGet("{id:long}")]
         [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
-        public async Task<IActionResult> GetUser(long id)
+        public async Task<Result<UserDto>> GetUser(long id)
         {
-            var result = await _userService.GetUserByIdAsync(id);
-
-            if (!result.IsSuccess)
-                return BadRequest(ApiResponse<Object>.FailResponse(result.ErrorCode));
-
-            return Ok(ApiResponse<Object>.SuccessResponse(result.Data!));
+            return await _userService.GetUserByIdAsync(id);
         }
 
         /// <summary>
@@ -58,13 +50,11 @@ namespace TaskManagement.API.Controllers
         /// <returns>List of users.</returns>
         [HttpGet("created")]
         [ProducesResponseType(typeof(ApiResponse<IEnumerable<UserDto>>), 200)]
-        public async Task<IActionResult> GetAllUsers()
+        public async Task<Result<IEnumerable<UserDto>>> GetAllUsers()
         {
             var userId = User.GetCurrentUserId();
 
-            var result = await _userService.GetCreatedUsersAsync((long)userId!);
-
-            return Ok(ApiResponse<Object>.SuccessResponse(result.Data!));
+            return await _userService.GetCreatedUsersAsync((long)userId!);
         }
 
         /// <summary>
@@ -74,26 +64,12 @@ namespace TaskManagement.API.Controllers
         /// <param name="dto">User data for update.</param>
         /// <returns>Status of the update.</returns>
         [HttpPut("{id:long}/update")]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 400)]
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
-        public async Task<IActionResult> UpdateUser(long id, [FromBody] UpdateUserDto dto)
+        public async Task<Result<UserDto>> UpdateUser(long id, [FromBody] UpdateUserDto dto)
         {
-            var result = await _userService.UpdateUserAsync(id, dto);
-
-            if (!result.IsSuccess)
-                return result.ErrorCode switch
-                {
-                    ErrorCodes.UserNotFound
-                        => NotFound(ApiResponse<object>.FailResponse(result.ErrorCode)),
-
-                    ErrorCodes.UserEmailAlreadyExists
-                        => Conflict(ApiResponse<object>.FailResponse(result.ErrorCode)),
-
-                    _ => BadRequest(ApiResponse<object>.FailResponse(ErrorCodes.InternalServerError))
-                };
-
-            return Ok(ApiResponse<object>.SuccessResponse(result.Data!));
+            return await _userService.UpdateUserAsync(id, dto);
         }
 
         /// <summary>
@@ -102,21 +78,11 @@ namespace TaskManagement.API.Controllers
         /// <param name="id">User Id.</param>
         /// <returns>Status of deletion.</returns>
         [HttpDelete("{id:long}/delete")]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
-        public async Task<IActionResult> DeleteUser(long id)
+        public async Task<Result<bool>> DeleteUser(long id)
         {
-            var result = await _userService.SoftDeleteUserAsync(id);
-
-            if (!result.IsSuccess)
-                return result.ErrorCode switch
-                {
-                    ErrorCodes.UserNotFound
-                        => NotFound(ApiResponse<object>.FailResponse(result.ErrorCode)),
-                    _ => BadRequest(ApiResponse<object>.FailResponse(ErrorCodes.InternalServerError))
-                };
-
-            return Ok(ApiResponse<object>.SuccessResponse(new { id }, result.SuccessCode!));
+            return await _userService.SoftDeleteUserAsync(id);
         }
     }
 }

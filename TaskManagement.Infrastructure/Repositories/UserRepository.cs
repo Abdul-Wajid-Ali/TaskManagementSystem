@@ -19,7 +19,7 @@ namespace TaskManagement.Infrastructure.Repositories
         public async Task<IEnumerable<User>> GetCreatedUsersAsync(long id)
         {
             return await _dbContext.Users.AsNoTracking()
-                .Where(item => item.DeletedOn == null && item.CreatedByUserId == id)
+                .Where(item => item.CreatedByUserId == id)
                 .ToListAsync();
         }
 
@@ -27,7 +27,6 @@ namespace TaskManagement.Infrastructure.Repositories
         public async Task<User?> GetUserByIdAsync(long id)
         {
             return await _dbContext.Users.AsNoTracking()
-                .Where(item => item.DeletedOn == null)
                 .FirstOrDefaultAsync(item => item.Id == id);
         }
 
@@ -35,7 +34,6 @@ namespace TaskManagement.Infrastructure.Repositories
         public async Task<User?> GetUserByEmailAsync(string email)
         {
             return await _dbContext.Users.AsNoTracking()
-                .Where(item => item.DeletedOn == null)
                 .FirstOrDefaultAsync(item => string.Equals(item.Email, email));
         }
 
@@ -51,7 +49,7 @@ namespace TaskManagement.Infrastructure.Repositories
         public Task<bool> IsCreatedUser(long userId, long currentUserId)
         {
             return _dbContext.Users.AsNoTracking()
-                .AnyAsync(item => item.Id == userId && item.CreatedByUserId == currentUserId && item.DeletedOn == null);
+                .AnyAsync(item => item.Id == userId && item.CreatedByUserId == currentUserId);
         }
 
         public Task<User?> GetUserByRefreshTokenAsync(string refreshToken)

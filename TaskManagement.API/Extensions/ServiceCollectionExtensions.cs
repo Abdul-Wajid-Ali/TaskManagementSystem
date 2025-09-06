@@ -1,10 +1,11 @@
-﻿using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using TaskManagement.API.Filters;
 using TaskManagement.Application.Config;
 using TaskManagement.Application.Interfaces.Logging;
 using TaskManagement.Application.Interfaces.Repositories;
@@ -30,7 +31,10 @@ namespace TaskManagement.API.Extensions
             var jwtSettings = configuration.GetSection("Jwt").Get<JwtSettings>();
 
             // Add Controllers with JSON options
-            services.AddControllers().AddJsonOptions(opt =>
+            services.AddControllers(opt =>
+            {
+                opt.Filters.Add(new ServiceResultFilter());
+            }).AddJsonOptions(opt =>
             {
                 opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                 opt.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;

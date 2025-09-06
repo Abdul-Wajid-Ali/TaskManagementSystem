@@ -19,6 +19,9 @@ namespace TaskManagement.Application.Mappings
 
             // Map UserDto -> LoginResponseDto
             CreateMap<User, LoginResponseDto>();
+
+            // Map UserDto -> UserProfileDto
+            CreateMap<User, UserProfileDto>();
         }
     }
 }

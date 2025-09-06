@@ -79,25 +79,25 @@ namespace TaskManagement.Application.Services
         }
 
         // Change user password
-        public async Task<Result<ChangePasswordDto>> ChangePasswordAsync(ChangePasswordDto dto, long id)
+        public async Task<Result<bool>> ChangePasswordAsync(ChangePasswordDto dto, long id)
         {
             // Get user by id
             var user = await _repository.GetUserByIdAsync(id);
 
             if (user == null)
-                return Result<ChangePasswordDto>.Fail(ErrorCodes.UserNotFound);
+                return Result<bool>.Fail(ErrorCodes.UserNotFound);
 
             // Verify old password
             var isValidOldPassword = _passwordService.VerifyPassword(dto.CurrentPassword, user.PasswordSalt, user.PasswordHash);
             if (!isValidOldPassword)
-                return Result<ChangePasswordDto>.Fail(ErrorCodes.InvalidOldPassword);
+                return Result<bool>.Fail(ErrorCodes.InvalidOldPassword);
 
             // Change password
             user.PasswordSalt = _passwordService.GenerateSalt();
             user.PasswordHash = _passwordService.HashPassword(dto.NewPassword, user.PasswordSalt);
             await _repository.UpdateUserAsync(user);
 
-            return Result<ChangePasswordDto>.Success(dto);
+            return Result<bool>.Success(true, SuccessCodes.UserPasswordUpdatedSuccessfully);
         }
 
         // Refresh JWT token

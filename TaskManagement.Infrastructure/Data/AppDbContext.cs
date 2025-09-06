@@ -22,6 +22,10 @@ namespace TaskManagement.Infrastructure.Data
 
             // Apply all configurations from the current assembly
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+            // Global query filters to exclude soft-deleted records
+            modelBuilder.Entity<Task>().HasQueryFilter(t => t.DeletedOn == null);
+            modelBuilder.Entity<User>().HasQueryFilter(u => u.DeletedOn == null);
         }
     }
 }

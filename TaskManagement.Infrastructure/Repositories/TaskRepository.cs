@@ -21,7 +21,6 @@ namespace TaskManagement.Infrastructure.Repositories
         {
             return await _dbContext.Tasks.AsNoTracking()
                 .Include(t => t.UserTasks)
-                .Where(item => item.DeletedOn == null)
                 .FirstOrDefaultAsync(item => item.Id == id);
         }
 
@@ -31,14 +30,14 @@ namespace TaskManagement.Infrastructure.Repositories
             return await _dbContext.UsersTasks.AsNoTracking()
                 .Where(item => item.UserId == userId)
                 .Include(item => item.Task)
-                .Where(item => item.Task.DeletedOn == null).ToListAsync();
+                .ToListAsync();
         }
 
         // Get tasks created by a specific user
         public async Task<IEnumerable<Task>> GetCreatedTasksAsync(long userId)
         {
             return await _dbContext.Tasks.AsNoTracking()
-                .Where(item => item.DeletedOn == null && item.CreatedByUserId == userId)
+                .Where(item => item.CreatedByUserId == userId)
                 .Include(item => item.UserTasks)
                 .ToListAsync();
         }
@@ -69,7 +68,7 @@ namespace TaskManagement.Infrastructure.Repositories
         public Task<bool> IsCreatedTask(long taskId, long userId)
         {
             return _dbContext.Tasks.AsNoTracking()
-                .Where(item => item.DeletedOn == null && item.Id == taskId && item.CreatedByUserId == userId)
+                .Where(item => item.Id == taskId && item.CreatedByUserId == userId)
                 .AnyAsync();
         }
 
@@ -77,7 +76,7 @@ namespace TaskManagement.Infrastructure.Repositories
         public Task<bool> IsAssignedTask(long taskId, long userId)
         {
             return _dbContext.Tasks.AsNoTracking()
-                .Where(item => item.DeletedOn == null && item.Id == taskId)
+                .Where(item => item.Id == taskId)
                 .Include(item => item.UserTasks)
                 .Where(item => item.UserTasks.Any(ut => ut.UserId == userId))
                 .AnyAsync();
