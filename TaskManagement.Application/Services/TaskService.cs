@@ -115,7 +115,7 @@ namespace TaskManagement.Application.Services
             if (!isTaskAssigned)
                 return Result<TaskDto>.Fail(ErrorCodes.TaskNotFound);
 
-            if (Enum.IsDefined(typeof(TaskProgress), dto.Status))
+            if (!Enum.IsDefined(typeof(TaskProgress), dto.Status))
                 return Result<TaskDto>.Fail(ErrorCodes.InvalidTaskStatus);
 
             // Update only status field

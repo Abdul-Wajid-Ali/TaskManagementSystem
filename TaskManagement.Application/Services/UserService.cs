@@ -84,7 +84,7 @@ namespace TaskManagement.Application.Services
         }
 
         // Update user details
-        public async Task<Result<UserDto>> UpdateUserAsync(long userId, UpdateUserDto dto)
+        public async Task<Result<UserDto>> UpdateUserAsync(long userId, UpdateUserDto dto, long currentUserId)
         {
             var existingUser = await _repository.GetUserByIdAsync(userId);
 
@@ -93,7 +93,7 @@ namespace TaskManagement.Application.Services
                 return Result<UserDto>.Fail(ErrorCodes.UserNotFound);
 
             // Prevent updates to Admins and Employees not created by the requesting user
-            if (existingUser.Role == UserRole.Admin || (existingUser.Role == UserRole.Employee && existingUser.CreatedByUserId != userId))
+            if (existingUser.Role == UserRole.Admin || (existingUser.Role == UserRole.Employee && existingUser.CreatedByUserId != currentUserId))
                 return Result<UserDto>.Fail(ErrorCodes.UserNotFound);
 
             // Check for email uniqueness if email is being updated

@@ -71,7 +71,9 @@ namespace TaskManagement.API.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 404)]
         public async Task<Result<UserDto>> UpdateUser(long id, [FromBody] UpdateUserDto dto)
         {
-            return await _userService.UpdateUserAsync(id, dto);
+            var currentUserId = User.GetCurrentUserId();
+
+            return await _userService.UpdateUserAsync(id, dto, (long)currentUserId!);
         }
 
         /// <summary>

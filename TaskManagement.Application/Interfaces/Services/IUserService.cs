@@ -11,7 +11,7 @@ namespace TaskManagement.Application.Interfaces.Services
 
         Task<Result<IEnumerable<UserDto>>> GetCreatedUsersAsync(long id);
 
-        Task<Result<UserDto>> UpdateUserAsync(long userId, UpdateUserDto dto);
+        Task<Result<UserDto>> UpdateUserAsync(long userId, UpdateUserDto dto, long currentUserId);
 
         Task<Result<bool>> SoftDeleteUserAsync(long id, long userId);
     }
