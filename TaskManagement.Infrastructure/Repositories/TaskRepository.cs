@@ -66,21 +66,35 @@ namespace TaskManagement.Infrastructure.Repositories
         }
 
         // Check if a task is created by a specific user
-        public Task<bool> IsCreatedTask(long taskId, long userId)
+        public async Task<bool> IsCreatedTask(long taskId, long userId)
         {
-            return _dbContext.Tasks.AsNoTracking()
+            return await _dbContext.Tasks.AsNoTracking()
                 .Where(item => item.Id == taskId && item.CreatedByUserId == userId)
                 .AnyAsync();
         }
 
         // Check if a task is assigned to a specific user
-        public Task<bool> IsAssignedTask(long taskId, long userId)
+        public async Task<bool> IsAssignedTask(long taskId, long userId)
         {
-            return _dbContext.Tasks.AsNoTracking()
+            return await _dbContext.Tasks.AsNoTracking()
                 .Where(item => item.Id == taskId)
                 .Include(item => item.UserTasks)
                 .Where(item => item.UserTasks.Any(ut => ut.UserId == userId))
                 .AnyAsync();
+        }
+
+        public async Task<int> MarkCompletedTasksAsDeletedAsync(DateTime cutoff)
+        {
+            var tasks = await _dbContext.Tasks
+               .Where(t => t.CompletedOn != null && t.CompletedOn <= cutoff && t.DeletedOn == null)
+               .ToListAsync();
+
+            foreach (var task in tasks)
+                task.DeletedOn = DateTime.UtcNow;
+
+            await _dbContext.SaveChangesAsync();
+
+            return tasks.Count;
         }
     }
 }

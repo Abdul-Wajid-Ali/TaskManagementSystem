@@ -1,5 +1,7 @@
-﻿using TaskManagement.API.Extensions;
+﻿using Hangfire;
+using TaskManagement.API.Extensions;
 using TaskManagement.API.Middleware;
+using TaskManagement.Application.Interfaces.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,5 +27,12 @@ app.UseAuthorization();
 
 // 4. Controllers / endpoints
 app.MapControllers();
+
+// 5. Hangfire Dashboard & Recurring Jobs
+app.UseHangfireDashboard();
+RecurringJob.AddOrUpdate<ITaskCleanupService>(
+    "completed-task-cleanup",
+    service => service.MarkCompletedTasksAsDeletedAsync(),
+    Cron.Minutely());
 
 await app.RunAsync();

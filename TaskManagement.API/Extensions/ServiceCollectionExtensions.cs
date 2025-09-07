@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Hangfire;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -76,6 +77,7 @@ namespace TaskManagement.API.Extensions
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IExceptionLogWriter, EfExceptionLogWriter>();
+            services.AddScoped<ITaskCleanupService, TaskCleanupService>();
 
             // Authentication / JWT
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -92,6 +94,11 @@ namespace TaskManagement.API.Extensions
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
                 };
             });
+
+            services.AddHangfire(config =>
+                config.UseSqlServerStorage(configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddHangfireServer();
 
             return services;
         }

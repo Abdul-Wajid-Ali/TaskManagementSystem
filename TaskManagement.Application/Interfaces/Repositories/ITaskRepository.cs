@@ -19,5 +19,7 @@ namespace TaskManagement.Application.Interfaces.Repositories
         Task<bool> IsCreatedTask(long taskId, long userId);
 
         Task<bool> IsAssignedTask(long taskId, long userId);
+
+        Task<int> MarkCompletedTasksAsDeletedAsync(DateTime cutoff);
     }
 }
